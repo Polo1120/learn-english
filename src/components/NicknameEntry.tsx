@@ -36,57 +36,83 @@ export const NicknameEntry = ({ onSubmit, sessionTitle }: NicknameEntryProps) =>
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-4">
-            <div className="card max-w-md w-full">
-                <div className="mb-6 text-center">
-                    <h1 className="text-3xl font-bold mb-2">🎮 {sessionTitle}</h1>
-                    <p className="text-slate-600">
-                        Ingresa tu apodo para participar en esta sesión
+        <div className="min-h-screen bg-dark-bg text-white font-display flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Background Gradients */}
+            <div className="fixed inset-0 z-0 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 rounded-full blur-[120px]"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[100px]"></div>
+            </div>
+
+            <div className="glass-card max-w-md w-full relative z-10 p-8">
+                <div className="mb-8 text-center">
+                    <div className="flex justify-center mb-4">
+                        <div className="size-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary mb-4 shadow-lg shadow-primary/10">
+                            <span className="material-symbols-outlined text-4xl">sports_esports</span>
+                        </div>
+                    </div>
+                    <h1 className="text-3xl font-black mb-2 tracking-tight">
+                        {sessionTitle}
+                    </h1>
+                    <p className="text-gray-400">
+                        Ingresa tu apodo para unirte a la sesión
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label htmlFor="nickname" className="block text-sm font-medium mb-2">
-                            Apodo
+                        <label htmlFor="nickname" className="block text-sm font-bold mb-2 text-gray-300">
+                            Tu Apodo
                         </label>
-                        <input
-                            id="nickname"
-                            type="text"
-                            value={nickname}
-                            onChange={(e) => {
-                                setNickname(e.target.value);
-                                setError('');
-                            }}
-                            placeholder="Tu apodo único"
-                            className="input w-full"
-                            maxLength={20}
-                            autoFocus
-                        />
-                        <p className="text-xs text-slate-500 mt-1">
-                            3-20 caracteres, solo letras y números
-                        </p>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span className="material-symbols-outlined text-gray-500">badge</span>
+                            </div>
+                            <input
+                                id="nickname"
+                                type="text"
+                                value={nickname}
+                                onChange={(e) => {
+                                    setNickname(e.target.value);
+                                    setError('');
+                                }}
+                                placeholder="Ej: EagleEye, FastLearner..."
+                                className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-white placeholder-gray-500"
+                                maxLength={20}
+                                autoFocus
+                            />
+                        </div>
+                        <div className="flex justify-between mt-2">
+                            <p className="text-xs text-gray-500">
+                                3-20 caracteres
+                            </p>
+                            <p className="text-xs text-gray-500">
+                                Letras y números
+                            </p>
+                        </div>
+
                     </div>
 
                     {error && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
-                            <X size={16} className="text-red-500 mt-0.5 flex-shrink-0" />
-                            <p className="text-sm text-red-700">{error}</p>
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3 animate-fade-in">
+                            <X size={20} className="text-red-400 mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-red-200 font-medium">{error}</p>
                         </div>
                     )}
 
                     <button
                         type="submit"
-                        className="btn btn-primary w-full"
+                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary hover:from-emerald-400 hover:to-cyan-300 text-slate-900 h-12 rounded-xl text-base font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
                         disabled={nickname.trim().length < 3}
                     >
-                        Comenzar a Jugar
+                        <span>Unirse a la Partida</span>
+                        <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                     </button>
                 </form>
 
-                <div className="mt-6 pt-6 border-t border-slate-200">
-                    <p className="text-xs text-slate-500 text-center">
-                        💡 Tu apodo debe ser único en esta sesión
+                <div className="mt-8 pt-6 border-t border-white/10 text-center">
+                    <p className="text-xs text-gray-500 flex items-center justify-center gap-2">
+                        <span className="material-symbols-outlined text-sm">info</span>
+                        Tu apodo debe ser único en esta sesión
                     </p>
                 </div>
             </div>

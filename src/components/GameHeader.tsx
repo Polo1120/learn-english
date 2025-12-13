@@ -11,7 +11,7 @@ export const GameHeader = ({ title, onShare, onExit, children }: GameHeaderProps
     return (
         <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-4 text-[#111318] dark:text-white">
-                <div className="size-8 flex items-center justify-center text-primary">
+                <div className="size-8 flex items-center justify-center text-primary-legacy-DEFAULT dark:text-primary">
                     <span className="material-symbols-outlined !text-3xl">school</span>
                 </div>
                 <h2 className="text-[#111318] dark:text-white text-xl font-extrabold leading-tight tracking-[-0.015em]">
@@ -22,7 +22,7 @@ export const GameHeader = ({ title, onShare, onExit, children }: GameHeaderProps
                 {onShare && (
                     <button
                         onClick={onShare}
-                        className="flex items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-primary/10 hover:bg-primary/20 text-primary text-sm font-bold leading-normal transition-colors duration-200"
+                        className="flex items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-primary/10 hover:bg-primary/20 text-primary-legacy-dark dark:text-primary text-sm font-bold leading-normal transition-colors duration-200"
                     >
                         <span className="material-symbols-outlined !text-lg">share</span>
                         <span className="hidden sm:inline">Share Session</span>

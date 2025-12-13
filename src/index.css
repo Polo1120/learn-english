@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-background-light dark:bg-background-dark text-[#111318] dark:text-white font-display antialiased min-h-screen flex flex-col;
+    @apply bg-background-light dark:bg-dark-bg text-[#111318] dark:text-white font-display antialiased min-h-screen flex flex-col;
   }
 }
 
@@ -17,6 +17,20 @@
 
   .dark .glass-header {
     background: rgba(16, 22, 34, 0.9);
+  }
+
+  /* New Login Design Utilities */
+  .glass-card {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(52, 211, 153, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  .input-glass {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   /* Material Symbols utilities */
@@ -33,6 +47,20 @@
   .material-symbols-outlined.fill-1 {
     font-variation-settings: 'FILL' 1;
   }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
 }
 
 /* Keeping existing classes for compatibility */
@@ -79,7 +107,7 @@
 }
 
 .card {
-  @apply bg-white dark:bg-[#1A2230] border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm p-6;
+  @apply bg-white dark:bg-card-bg border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm p-6;
 }
 
 /* Grid Layouts */
@@ -103,7 +131,7 @@
 
 /* Typography */
 .page-title {
-  @apply text-4xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 animate-fade-in;
+  @apply text-4xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary animate-fade-in;
 }
 
 .page-subtitle {
@@ -139,7 +167,7 @@
 .input,
 .select,
 .textarea {
-  @apply bg-white dark:bg-[#1A2230] border border-gray-100 dark:border-gray-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all;
+  @apply bg-white dark:bg-[#1A2230] border border-gray-100 dark:border-gray-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all w-full;
 }
 
 /* Custom Animation Utilities */

@@ -105,7 +105,7 @@ export const CreateSessionModal = ({
                     /* Configuration Form */
                     <div className="space-y-4">
                         <div>
-                            <label htmlFor="title" className="block text-sm font-medium mb-2">
+                            <label htmlFor="title" className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-200">
                                 Título de la Sesión
                             </label>
                             <input
@@ -119,7 +119,7 @@ export const CreateSessionModal = ({
                         </div>
 
                         <div>
-                            <label htmlFor="duration" className="block text-sm font-medium mb-2">
+                            <label htmlFor="duration" className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-200">
                                 <Calendar size={16} className="inline mr-1" />
                                 Duración
                             </label>
@@ -139,7 +139,7 @@ export const CreateSessionModal = ({
                         </div>
 
                         <div>
-                            <label htmlFor="maxAttempts" className="block text-sm font-medium mb-2">
+                            <label htmlFor="maxAttempts" className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-200">
                                 🔄 Intentos Máximos por Usuario
                             </label>
                             <select
@@ -155,16 +155,16 @@ export const CreateSessionModal = ({
                                 <option value={5}>5 intentos</option>
                                 <option value={10}>10 intentos</option>
                             </select>
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                 Número de veces que cada usuario puede jugar
                             </p>
                         </div>
 
-                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                            <h3 className="font-semibold text-indigo-900 mb-2">
+                        <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-500/30 rounded-lg p-4">
+                            <h3 className="font-semibold text-indigo-900 dark:text-indigo-200 mb-2">
                                 📋 Detalles del Juego
                             </h3>
-                            <div className="space-y-1 text-sm text-indigo-700">
+                            <div className="space-y-1 text-sm text-indigo-700 dark:text-indigo-300">
                                 <p><strong>Juego:</strong> {game.title}</p>
                                 <p><strong>Tipo:</strong> {game.type}</p>
                                 <p><strong>Participantes:</strong> Ilimitados</p>
@@ -191,20 +191,20 @@ export const CreateSessionModal = ({
                 ) : (
                     /* Session Created - Share Link */
                     <div className="space-y-4">
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-500/30 rounded-lg p-4">
                             <div className="flex items-center gap-2 mb-2">
-                                <Check className="text-green-600" size={20} />
-                                <h3 className="font-semibold text-green-900">
+                                <Check className="text-green-600 dark:text-green-400" size={20} />
+                                <h3 className="font-semibold text-green-900 dark:text-green-200">
                                     ¡Sesión creada exitosamente!
                                 </h3>
                             </div>
-                            <p className="text-sm text-green-700">
+                            <p className="text-sm text-green-700 dark:text-green-300">
                                 Código de sesión: <strong className="font-mono">{sessionCode}</strong>
                             </p>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-2">
+                            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-200">
                                 Link para Compartir
                             </label>
                             <div className="flex gap-2">
@@ -220,7 +220,7 @@ export const CreateSessionModal = ({
                                     title="Copiar link"
                                 >
                                     {copied ? (
-                                        <Check size={20} className="text-green-600" />
+                                        <Check size={20} className="text-green-600 dark:text-green-400" />
                                     ) : (
                                         <Copy size={20} />
                                     )}
@@ -244,11 +244,11 @@ export const CreateSessionModal = ({
                             </button>
                         </div>
 
-                        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                            <h4 className="font-semibold text-slate-900 mb-2 text-sm">
+                        <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                            <h4 className="font-semibold text-slate-900 dark:text-slate-200 mb-2 text-sm">
                                 💡 Instrucciones
                             </h4>
-                            <ul className="text-xs text-slate-600 space-y-1">
+                            <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
                                 <li>• Comparte el link con los participantes</li>
                                 <li>• Cada persona debe ingresar un apodo único</li>
                                 <li>• Las puntuaciones se actualizan en tiempo real</li>

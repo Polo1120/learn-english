@@ -51,7 +51,7 @@ export const Layout = () => {
                             {user && (
                                 <button
                                     onClick={logout}
-                                    className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm hover:shadow-md"
+                                    className="flex items-center gap-2 bg-gradient-to-r from-primary to-secondary hover:from-emerald-400 hover:to-cyan-300 text-slate-900 px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm hover:shadow-md"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">logout</span>
                                     <span className="hidden sm:inline">Logout</span>

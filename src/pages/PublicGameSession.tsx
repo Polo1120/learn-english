@@ -412,7 +412,7 @@ export const PublicGameSession = () => {
     const bestScore = Math.max(...scores.map(s => s.score), 0);
 
     return (
-        <div className="bg-background-dark text-white font-display min-h-screen flex flex-col relative overflow-x-hidden selection:bg-primary selection:text-white">
+        <div className="bg-dark-bg text-white font-display min-h-screen flex flex-col relative overflow-x-hidden selection:bg-primary selection:text-white">
             {/* Vibrant Gradient Background */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 rounded-full blur-[120px]"></div>
@@ -420,7 +420,7 @@ export const PublicGameSession = () => {
             </div>
 
             {/* Header / Top Bar */}
-            <header className="relative z-20 w-full border-b border-white/10 bg-[#111318]/80 backdrop-blur-md">
+            <header className="relative z-20 w-full border-b border-white/10 bg-dark-bg/80 backdrop-blur-md">
                 <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
                     {/* Left: Session Title */}
                     <div className="flex items-center gap-4 min-w-0">
@@ -493,7 +493,7 @@ export const PublicGameSession = () => {
 
                     {/* Leaderboard Sidebar */}
                     <aside className="w-full h-full hidden lg:block">
-                        <div className="glass-panel p-5 rounded-xl flex flex-col gap-4 sticky top-6 bg-surface-dark/60 backdrop-blur-md border border-white/10">
+                        <div className="glass-panel p-5 rounded-xl flex flex-col gap-4 sticky top-6 bg-card-bg/60 backdrop-blur-md border border-white/10">
                             <div className="flex items-center justify-between pb-4 border-b border-white/10">
                                 <h3 className="font-bold text-lg text-white flex items-center gap-2">
                                     <Trophy className="text-yellow-500" size={20} />
