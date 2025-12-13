@@ -82,7 +82,7 @@ export const Home = () => {
             {/* Games Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {games.map((game) => (
-                    <div key={game.id} className="group bg-white dark:bg-[#1A2230] rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden">
+                    <div key={game.id} className="group bg-white dark:bg-card-bg rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden">
 
                         {/* Card Image Header */}
                         <div className="relative h-48 bg-cover bg-center" style={{ backgroundImage: `url('${getGameImage(game.type)}')` }}>
@@ -109,7 +109,7 @@ export const Home = () => {
                             </p>
 
                             <div className="flex items-center justify-between gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                                <Link to={`/game/${game.id}`} className="flex-1 flex items-center justify-center gap-2 bg-primary text-white h-9 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors">
+                                <Link to={`/game/${game.id}`} className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary hover:from-emerald-400 hover:to-cyan-300 text-slate-900 h-9 rounded-lg text-sm font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all">
                                     Play Now
                                     <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                                 </Link>
@@ -126,8 +126,8 @@ export const Home = () => {
                 ))}
 
                 {/* Create New Game Card (Always shown at the end) */}
-                <Link to="/admin" className="group flex flex-col items-center justify-center min-h-[350px] bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-primary hover:bg-primary/5 transition-all duration-300 cursor-pointer">
-                    <div className="size-16 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                <Link to="/admin" className="group flex flex-col items-center justify-center min-h-[350px] bg-gray-50 dark:bg-card-bg/50 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-primary hover:bg-primary/5 transition-all duration-300 cursor-pointer">
+                    <div className="size-16 rounded-full bg-white dark:bg-card-bg flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
                         <span className="material-symbols-outlined text-4xl text-primary">add</span>
                     </div>
                     <h3 className="text-lg font-bold text-[#111318] dark:text-white mb-1">Create New Game</h3>
