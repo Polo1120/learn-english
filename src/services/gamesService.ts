@@ -2,9 +2,7 @@ import { supabase } from '../lib/supabase';
 import type { Game } from '../types';
 
 export const gamesService = {
-    /**
-     * Get all games for the current user
-     */
+
     async getAll(): Promise<Game[]> {
         try {
             const { data: { user } } = await supabase.auth.getUser();
