@@ -24,9 +24,6 @@ export const gamesService = {
         }
     },
 
-    /**
-     * Get a single game by ID
-     */
     async getOne(id: string): Promise<Game | null> {
         try {
             const { data, error } = await supabase
@@ -43,9 +40,6 @@ export const gamesService = {
         }
     },
 
-    /**
-     * Create a new game
-     */
     async create(game: Omit<Game, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<Game> {
         try {
             const { data: { user } } = await supabase.auth.getUser();
@@ -70,9 +64,6 @@ export const gamesService = {
         }
     },
 
-    /**
-     * Update an existing game
-     */
     async update(id: string, game: Partial<Omit<Game, 'id' | 'user_id' | 'created_at' | 'updated_at'>>): Promise<Game> {
         try {
             const { data, error } = await supabase
@@ -93,9 +84,6 @@ export const gamesService = {
         }
     },
 
-    /**
-     * Delete a game
-     */
     async delete(id: string): Promise<boolean> {
         try {
             const { error } = await supabase
@@ -111,9 +99,6 @@ export const gamesService = {
         }
     },
 
-    /**
-     * Subscribe to real-time changes
-     */
     subscribe(callback: (payload: any) => void) {
         const channel = supabase
             .channel('games_changes')
