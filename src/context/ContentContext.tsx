@@ -7,6 +7,7 @@ import { useAuth } from './AuthContext';
 interface ContentContextType {
     games: Game[];
     addGame: (game: Omit<Game, 'id'>) => Promise<void>;
+    updateGame: (id: string, game: Partial<Omit<Game, 'id'>>) => Promise<void>;
     deleteGame: (id: string) => Promise<void>;
     loading: boolean;
     error: string | null;
@@ -66,6 +67,18 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const updateGame = async (id: string, game: Partial<Omit<Game, 'id'>>) => {
+        try {
+            setError(null);
+            const updated = await gamesService.update(id, game);
+            setGames(prev => prev.map(g => g.id === id ? updated : g));
+        } catch (err: any) {
+            console.error('Error updating game:', err);
+            setError(err.message || 'Failed to update game');
+            throw err;
+        }
+    };
+
     const deleteGame = async (id: string) => {
         try {
             setError(null);
@@ -81,7 +94,7 @@ export const ContentProvider = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <ContentContext.Provider value={{ games, addGame, deleteGame, loading, error }}>
+        <ContentContext.Provider value={{ games, addGame, updateGame, deleteGame, loading, error }}>
             {children}
         </ContentContext.Provider>
     );

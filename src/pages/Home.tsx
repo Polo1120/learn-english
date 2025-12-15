@@ -1,17 +1,31 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useContent } from '../context/ContentContext';
 import { Loader2, AlertCircle } from 'lucide-react';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 
 export const Home = () => {
     const { games, deleteGame, loading, error } = useContent();
+    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; gameId: string | null; title: string }>({
+        isOpen: false,
+        gameId: null,
+        title: ''
+    });
 
-    const handleDelete = async (e: React.MouseEvent, id: string, title: string) => {
+    const handleDeleteClick = (e: React.MouseEvent, id: string, title: string) => {
         e.preventDefault();
-        if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
+        setDeleteModal({ isOpen: true, gameId: id, title });
+    };
+
+    const confirmDelete = async () => {
+        if (deleteModal.gameId) {
             try {
-                await deleteGame(id);
+                await deleteGame(deleteModal.gameId);
             } catch (err) {
-                alert('Failed to delete game. Please try again.');
+                // Could also use a modal here for error, but avoiding nesting complexity for now
+                console.error("Delete failed");
+            } finally {
+                setDeleteModal({ ...deleteModal, isOpen: false });
             }
         }
     };
@@ -113,8 +127,15 @@ export const Home = () => {
                                     Play Now
                                     <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                                 </Link>
+                                <Link
+                                    to={`/admin/edit/${game.id}`}
+                                    className="flex items-center justify-center size-9 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                                    title="Edit Game"
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">edit</span>
+                                </Link>
                                 <button
-                                    onClick={(e) => handleDelete(e, game.id, game.title)}
+                                    onClick={(e) => handleDeleteClick(e, game.id, game.title)}
                                     className="flex items-center justify-center size-9 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                     title="Delete Game"
                                 >
@@ -136,6 +157,17 @@ export const Home = () => {
                     </p>
                 </Link>
             </div>
+
+            <ConfirmationModal
+                isOpen={deleteModal.isOpen}
+                onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+                onConfirm={confirmDelete}
+                title="Delete Game"
+                message={`Are you sure you want to delete "${deleteModal.title}"? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                variant="danger"
+            />
         </div>
     );
 };

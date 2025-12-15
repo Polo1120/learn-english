@@ -117,7 +117,7 @@ export const HangmanGame = ({ words, onGameComplete, onShare }: HangmanGameProps
                     </div>
 
                     {/* Game Area: Visuals + Word */}
-                    <div className="flex flex-col lg:flex-row min-h-[400px]">
+                    <div className="flex flex-col-reverse lg:flex-row min-h-[400px]">
                         {/* Left: Illustration */}
                         <div className="lg:w-5/12 bg-[#f0f2f4] dark:bg-[#101622] flex items-center justify-center p-8 relative border-r border-gray-100 dark:border-gray-800">
                             {/* Minimalist Hangman SVG */}

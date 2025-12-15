@@ -135,7 +135,7 @@ export const QuizGame = ({ questions, onGameComplete, onShare }: QuizGameProps) 
                     />
                     {/* Progress and Stats Bar */}
                     <div className="w-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-[#e5e7eb] dark:border-gray-800 p-5 flex flex-col gap-4">
-                        <div className="flex justify-between items-center text-sm sm:text-base font-bold text-[#111318] dark:text-white">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm sm:text-base font-bold text-[#111318] dark:text-white gap-2">
                             <span className="flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">help</span>
                                 Question {currentIndex + 1} of {questions.length}
@@ -166,7 +166,7 @@ export const QuizGame = ({ questions, onGameComplete, onShare }: QuizGameProps) 
                         </div>
 
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             {currentQuestion.options.map((option, index) => {
                                 const isCorrect = index === currentQuestion.correctAnswer;
                                 const isSelected = selectedAnswer === index;

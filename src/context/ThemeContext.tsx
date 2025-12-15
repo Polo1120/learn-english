@@ -9,11 +9,11 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+export const ThemeProvider = ({ children, storageKey = 'theme' }: { children: ReactNode; storageKey?: string }) => {
     const [theme, setTheme] = useState<Theme>(() => {
-        const stored = localStorage.getItem('theme');
+        const stored = localStorage.getItem(storageKey);
         if (stored === 'dark' || stored === 'light') return stored;
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        return 'light';
     });
 
     useEffect(() => {
@@ -23,8 +23,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         // Add the current theme class
         root.classList.add(theme);
         // Persist to localStorage
-        localStorage.setItem('theme', theme);
-    }, [theme]);
+        localStorage.setItem(storageKey, theme);
+    }, [theme, storageKey]);
 
     const toggleTheme = () => {
         setTheme(prev => prev === 'dark' ? 'light' : 'dark');
