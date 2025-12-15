@@ -8,15 +8,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        // New Palette to match "Creativo Esmeralda" design
         "primary": "#34d399",
         "secondary": "#22d3ee",
         "accent-purple": "#a78bfa",
         "accent-pink": "#f472b6",
         "dark-bg": "#0f172a",
+        "light-bg": "#f1f5f9",
         "card-bg": "#1e293b",
+        "text-main": "#0f172a",
+        "text-sub": "#64748b",
 
-        // Legacy/Semantic mapping updated to new palette
         "primary-legacy": {
           DEFAULT: "#135bec",
           dark: "#0f4bbd",
@@ -27,11 +28,11 @@ export default {
         error: "#ef4444",
         background: {
           light: "#f6f6f8",
-          dark: "#0f172a", // Updated to match dark-bg
+          dark: "#0f172a",
         },
         surface: {
           light: "#ffffff",
-          dark: "#1e293b", // Updated to match card-bg
+          dark: "#1e293b",
         },
       },
       fontFamily: {

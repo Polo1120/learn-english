@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Copy, Check, Share2, Calendar } from 'lucide-react';
 import type { Game } from '../types';
+import { ConfirmationModal } from './ConfirmationModal';
 
 interface CreateSessionModalProps {
     game: Game;
@@ -21,6 +22,7 @@ export const CreateSessionModal = ({
     const [isCreating, setIsCreating] = useState(false);
     const [sessionCode, setSessionCode] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
 
     const handleCreate = async () => {
         setIsCreating(true);
@@ -29,7 +31,7 @@ export const CreateSessionModal = ({
             setSessionCode(code);
         } catch (error) {
             console.error('Error creating session:', error);
-            alert('Error al crear la sesión. Por favor intenta de nuevo.');
+            setErrorModal({ isOpen: true, message: 'Error al crear la sesión. Por favor intenta de nuevo.' });
         } finally {
             setIsCreating(false);
         }
@@ -258,6 +260,16 @@ export const CreateSessionModal = ({
                     </div>
                 )}
             </div>
-        </div>
+
+            <ConfirmationModal
+                isOpen={errorModal.isOpen}
+                onClose={() => setErrorModal({ ...errorModal, isOpen: false })}
+                onConfirm={() => setErrorModal({ ...errorModal, isOpen: false })}
+                title="Error"
+                message={errorModal.message}
+                confirmText="Entendido"
+                variant="danger"
+            />
+        </div >
     );
 };

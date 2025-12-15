@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { AlertCircle, Loader2, Trophy } from 'lucide-react';
 import { sessionService } from '../services/sessionService.js';
+import { useTheme } from '../context/ThemeContext';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 import { NicknameEntry } from '../components/NicknameEntry';
 import { QuizGame } from '../components/QuizGame';
 import { HangmanGame } from '../components/HangmanGame';
@@ -11,6 +13,7 @@ const NICKNAME_STORAGE_KEY = 'session_nickname_';
 const GAME_COMPLETED_KEY = 'session_game_completed_';
 
 export const PublicGameSession = () => {
+    const { theme, toggleTheme } = useTheme();
     const { sessionId } = useParams<{ sessionId: string }>();
     const [session, setSession] = useState<GameSessionExpanded | null>(null);
     const [nickname, setNickname] = useState<string | null>(null);
@@ -19,6 +22,15 @@ export const PublicGameSession = () => {
     const [gameCompleted, setGameCompleted] = useState(false);
     const [scores, setScores] = useState<SessionScore[]>([]);
     const [submittingScore, setSubmittingScore] = useState(false);
+    const [alertModal, setAlertModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+    }>({
+        isOpen: false,
+        title: '',
+        message: ''
+    });
 
     const [canPlayAgain, setCanPlayAgain] = useState(true);
 
@@ -122,7 +134,7 @@ export const PublicGameSession = () => {
         try {
             await sessionService.submitScore(sessionId, nickname, score, timeInSeconds);
             setGameCompleted(true);
-            // Save game completed state to localStorage
+
             localStorage.setItem(GAME_COMPLETED_KEY + sessionId, 'true');
 
 
@@ -138,16 +150,28 @@ export const PublicGameSession = () => {
             console.error('Error submitting score:', err);
 
             if (err.message?.includes('límite')) {
-                alert(err.message);
+                setAlertModal({
+                    isOpen: true,
+                    title: 'Límite Alcanzado',
+                    message: err.message
+                });
                 setGameCompleted(true);
                 localStorage.setItem(GAME_COMPLETED_KEY + sessionId, 'true');
                 setCanPlayAgain(false);
             } else if (err.message?.includes('No superaste')) {
-                alert(err.message + '\n\nTu mejor puntuación se mantiene en el leaderboard.');
+                setAlertModal({
+                    isOpen: true,
+                    title: 'Puntuación no superada',
+                    message: err.message + '\n\nTu mejor puntuación se mantiene en el leaderboard.'
+                });
                 setGameCompleted(true);
                 localStorage.setItem(GAME_COMPLETED_KEY + sessionId, 'true');
             } else {
-                alert('Error al enviar puntuación. Por favor intenta de nuevo.');
+                setAlertModal({
+                    isOpen: true,
+                    title: 'Error',
+                    message: 'Error al enviar puntuación. Por favor intenta de nuevo.'
+                });
             }
         } finally {
             setSubmittingScore(false);
@@ -386,6 +410,17 @@ export const PublicGameSession = () => {
                         </div>
                     </main>
                 </div>
+                {/* Alert Modal - Duplicated for Game Completed View */}
+                <ConfirmationModal
+                    isOpen={alertModal.isOpen}
+                    onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+                    onConfirm={() => setAlertModal({ ...alertModal, isOpen: false })}
+                    title={alertModal.title}
+                    message={alertModal.message}
+                    confirmText="Entendido"
+                    variant="primary"
+                    cancelText="Cerrar"
+                />
             </div>
         );
     }
@@ -412,15 +447,15 @@ export const PublicGameSession = () => {
     const bestScore = Math.max(...scores.map(s => s.score), 0);
 
     return (
-        <div className="bg-dark-bg text-white font-display min-h-screen flex flex-col relative overflow-x-hidden selection:bg-primary selection:text-white">
+        <div className="bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-white font-display min-h-screen flex flex-col relative overflow-x-hidden selection:bg-primary selection:text-white transition-colors duration-300">
             {/* Vibrant Gradient Background */}
             <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 rounded-full blur-[120px]"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[100px]"></div>
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 dark:bg-primary/20 rounded-full blur-[120px]"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/5 dark:bg-purple-600/10 rounded-full blur-[100px]"></div>
             </div>
 
             {/* Header / Top Bar */}
-            <header className="relative z-20 w-full border-b border-white/10 bg-dark-bg/80 backdrop-blur-md">
+            <header className="relative z-20 w-full border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-dark-bg/80 backdrop-blur-md transition-colors duration-300">
                 <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
                     {/* Left: Session Title */}
                     <div className="flex items-center gap-4 min-w-0">
@@ -428,39 +463,47 @@ export const PublicGameSession = () => {
                             <span className="material-symbols-outlined">school</span>
                         </div>
                         <div className="flex flex-col min-w-0">
-                            <h2 className="text-base sm:text-lg font-bold leading-tight truncate">Sesión: {session?.title || 'Cargando...'}</h2>
-                            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-400">
+                            <h2 className="text-base sm:text-lg font-bold leading-tight truncate text-slate-900 dark:text-white">Sesión: {session?.title || 'Cargando...'}</h2>
+                            <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 dark:text-gray-400">
                                 <span className="inline-block size-2 rounded-full bg-green-500 animate-pulse"></span>
                                 <span>En vivo</span>
                                 <span className="mx-1">•</span>
-                                <span className="font-medium text-white">Código: {sessionId}</span>
+                                <span className="font-medium text-slate-700 dark:text-white">Código: {sessionId}</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Center: Playing As (Desktop/Tablet) */}
-                    <div className="hidden md:flex items-center gap-3 px-5 py-2 rounded-full bg-white/5 border border-white/5">
-                        <div className="size-6 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-[10px] font-bold uppercase">
+                    <div className="hidden md:flex items-center gap-3 px-5 py-2 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5">
+                        <div className="size-6 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-[10px] text-white font-bold uppercase">
                             {nickname?.substring(0, 2)}
                         </div>
-                        <span className="text-sm font-medium text-gray-300">Jugando como: <span className="text-white font-bold">{nickname}</span></span>
+                        <span className="text-sm font-medium text-slate-600 dark:text-gray-300">Jugando como: <span className="text-slate-900 dark:text-white font-bold">{nickname}</span></span>
                     </div>
 
                     {/* Right: Stats */}
                     <div className="flex items-center gap-3 sm:gap-6 text-sm">
-                        <div className="flex flex-col items-end sm:flex-row sm:items-center gap-1 sm:gap-2">
-                            <div className="flex items-center gap-1.5 text-gray-300 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+                        <div className="flex  items-end sm:flex-row sm:items-center gap-1 sm:gap-2">
+                            <div className="flex items-center gap-1.5 text-slate-600 dark:text-gray-300 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/5">
                                 <span className="material-symbols-outlined text-[18px]">group</span>
-                                <span className="font-bold text-white">{scores.length}</span>
+                                <span className="font-bold text-slate-900 dark:text-white">{scores.length}</span>
                                 <span className="hidden sm:inline text-xs font-normal">participantes</span>
                             </div>
                             {scores.length > 0 && (
-                                <div className="flex items-center gap-1.5 text-yellow-500 bg-yellow-500/10 px-3 py-1.5 rounded-lg border border-yellow-500/20">
+                                <div className="flex items-center gap-1.5 text-yellow-600 dark:text-yellow-500 bg-yellow-50 dark:bg-yellow-500/10 px-3 py-1.5 rounded-lg border border-yellow-200 dark:border-yellow-500/20">
                                     <span className="material-symbols-outlined text-[18px]">emoji_events</span>
-                                    <span className="hidden sm:inline text-xs text-yellow-200">Mejor:</span>
+                                    <span className="hidden sm:inline text-xs text-yellow-700 dark:text-yellow-200">Mejor:</span>
                                     <span className="font-bold">{bestScore} pts</span>
                                 </div>
                             )}
+                            <button
+                                onClick={toggleTheme}
+                                className="flex items-center justify-center size-9 ml-2 rounded-lg text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-[20px]">
+                                    {theme === 'dark' ? 'light_mode' : 'dark_mode'}
+                                </span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -485,7 +528,7 @@ export const PublicGameSession = () => {
                             />
                         )}
                         {!isQuiz && !isHangman && (
-                            <div className="glass-panel p-8 text-center text-gray-400">
+                            <div className="glass-panel text-slate-900 dark:text-gray-400 p-8 text-center bg-white/50 dark:bg-white/5">
                                 Juego no soportado en esta vista.
                             </div>
                         )}
@@ -493,9 +536,9 @@ export const PublicGameSession = () => {
 
                     {/* Leaderboard Sidebar */}
                     <aside className="w-full h-full hidden lg:block">
-                        <div className="glass-panel p-5 rounded-xl flex flex-col gap-4 sticky top-6 bg-card-bg/60 backdrop-blur-md border border-white/10">
-                            <div className="flex items-center justify-between pb-4 border-b border-white/10">
-                                <h3 className="font-bold text-lg text-white flex items-center gap-2">
+                        <div className="glass-panel p-5 rounded-xl flex flex-col gap-4 sticky top-6 bg-white/50 dark:bg-card-bg/60 backdrop-blur-md border border-slate-200 dark:border-white/10 transition-colors duration-300">
+                            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-white/10">
+                                <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
                                     <Trophy className="text-yellow-500" size={20} />
                                     Top Players
                                 </h3>
@@ -513,12 +556,12 @@ export const PublicGameSession = () => {
                                         // Top 1 Styling
                                         if (rank === 1) {
                                             return (
-                                                <div key={score.id} className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-yellow-500/10 to-transparent border border-yellow-500/20 shadow-sm relative overflow-hidden group hover:bg-white/5 transition-colors">
+                                                <div key={score.id} className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-yellow-500/10 to-transparent border border-yellow-500/20 shadow-sm relative overflow-hidden group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
                                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-yellow-500"></div>
                                                     <div className="size-8 flex items-center justify-center text-2xl drop-shadow-sm">🥇</div>
                                                     <div className="flex flex-col flex-1 min-w-0">
-                                                        <span className="text-sm font-bold text-white truncate">{score.nickname} {isCurrentUser && '(Tú)'}</span>
-                                                        <span className="text-xs text-yellow-200/80">{score.score} pts</span>
+                                                        <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{score.nickname} {isCurrentUser && '(Tú)'}</span>
+                                                        <span className="text-xs text-yellow-600 dark:text-yellow-200/80">{score.score} pts</span>
                                                     </div>
                                                 </div>
                                             );
@@ -526,13 +569,13 @@ export const PublicGameSession = () => {
 
                                         // Standard styling
                                         return (
-                                            <div key={score.id} className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${isCurrentUser ? 'bg-primary/20 border-primary/50' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}>
-                                                <div className="size-8 flex items-center justify-center text-xl text-gray-300">
-                                                    {rank === 2 ? '🥈' : rank === 3 ? '🥉' : <span className="text-sm font-bold text-gray-500">#{rank}</span>}
+                                            <div key={score.id} className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${isCurrentUser ? 'bg-primary/10 dark:bg-primary/20 border-primary/30 dark:border-primary/50' : 'bg-white/50 dark:bg-white/5 border-slate-200 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/10'}`}>
+                                                <div className="size-8 flex items-center justify-center text-xl text-slate-500 dark:text-gray-300">
+                                                    {rank === 2 ? '🥈' : rank === 3 ? '🥉' : <span className="text-sm font-bold text-slate-400 dark:text-gray-500">#{rank}</span>}
                                                 </div>
                                                 <div className="flex flex-col flex-1 min-w-0">
-                                                    <span className={`text-sm font-bold truncate ${isCurrentUser ? 'text-white' : 'text-gray-200'}`}>{score.nickname} {isCurrentUser && '(Tú)'}</span>
-                                                    <span className={`text-xs ${isCurrentUser ? 'text-blue-200' : 'text-gray-400'}`}>{score.score} pts</span>
+                                                    <span className={`text-sm font-bold truncate ${isCurrentUser ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-gray-200'}`}>{score.nickname} {isCurrentUser && '(Tú)'}</span>
+                                                    <span className={`text-xs ${isCurrentUser ? 'text-blue-600 dark:text-blue-200' : 'text-slate-500 dark:text-gray-400'}`}>{score.score} pts</span>
                                                 </div>
                                             </div>
                                         );
@@ -545,6 +588,17 @@ export const PublicGameSession = () => {
                 </div>
             </main>
 
+            {/* Alert Modal */}
+            <ConfirmationModal
+                isOpen={alertModal.isOpen}
+                onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+                onConfirm={() => setAlertModal({ ...alertModal, isOpen: false })}
+                title={alertModal.title}
+                message={alertModal.message}
+                confirmText="Entendido"
+                variant="primary"
+                cancelText="Cerrar"
+            />
         </div>
     );
 };
