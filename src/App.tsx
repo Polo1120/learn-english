@@ -1,15 +1,16 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ContentProvider } from './context/ContentContext';
-import { Layout } from './components/Layout';
+import { Layout } from './shared/components/Layout';
 import { ThemeProvider } from './context/ThemeContext';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { ProtectedRoute } from './shared/components/ProtectedRoute';
+import { TeacherRoute } from './shared/components/TeacherRoute';
 import { Home } from './pages/Home';
 import { GamePage } from './pages/GamePage';
 import { AdminPage } from './pages/AdminPage';
 import { Login } from './pages/Login';
 import { SessionsPage } from './pages/SessionsPage';
-
+import { StudentGameHistory } from './pages/StudentGameHistory';
 import { PublicGameSession } from './pages/PublicGameSession';
 
 function App() {
@@ -51,7 +52,8 @@ function App() {
                     >
                       <Route index element={<Home />} />
                       <Route path="game/:id" element={<GamePage />} />
-                      <Route path="sessions" element={<SessionsPage />} />
+                      <Route path="sessions" element={<TeacherRoute><SessionsPage /></TeacherRoute>} />
+                      <Route path="MyGames" element={<StudentGameHistory />} />
                       <Route path="admin" element={<AdminPage />} />
                       <Route path="admin/edit/:id" element={<AdminPage />} />
                     </Route>

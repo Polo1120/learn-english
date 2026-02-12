@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
-import { sessionService } from '../services/sessionService';
-import type { GameSessionExpanded } from '../types';
-import { SessionLeaderboardModal } from '../components/SessionLeaderboardModal';
+import { sessionService } from '../features/sessions/services/sessionService';
+import type { GameSessionExpanded } from '../shared/types';
+import { SessionLeaderboardModal } from '../features/sessions/components/SessionLeaderboardModal';
 import { Link } from 'react-router-dom';
+import { useProfile } from '../features/profile/hooks/useProfile';
+import { Trophy, Clock, Star, Gamepad2, Timer } from 'lucide-react';
+import { gameHistoryService } from '../features/games/services/gameHistoryService';
 
 export const SessionsPage = () => {
     const [sessions, setSessions] = useState<GameSessionExpanded[]>([]);

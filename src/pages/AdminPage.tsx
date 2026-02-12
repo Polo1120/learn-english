@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { AddGameForm } from '../components/AddGameForm';
+import { AddGameForm } from '../features/games/components/AddGameForm';
 
 export const AdminPage = () => {
     const { id } = useParams();

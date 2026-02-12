@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
-import type { Game } from '../types';
-import { gamesService } from '../services/gamesService';
+import type { Game } from '../shared/types';
+import { gamesService } from '../features/games/services/gamesService';
 import { useAuth } from './AuthContext';
 
 interface ContentContextType {
