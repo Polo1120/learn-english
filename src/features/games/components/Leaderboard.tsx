@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Trophy, Clock, Medal } from 'lucide-react';
-import type { SessionScore } from '../types';
+import type { SessionScore } from '../../../shared/types';
 
 interface LeaderboardProps {
     scores: SessionScore[];

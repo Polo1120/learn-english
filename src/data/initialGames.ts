@@ -1,4 +1,4 @@
-import type { Game } from '../types';
+import type { Game } from '../shared/types';
 
 export const initialGames: Omit<Game, 'id'>[] = [
     {
