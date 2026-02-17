@@ -34,7 +34,7 @@ export const Layout = () => {
 
     const studentLinks = [
         { to: '/', icon: LayoutDashboard, label: 'My Space' },
-        { to: '/MyGames', icon: Gamepad2, label: 'My Games' }, // Changed to MyGames for student
+        { to: '/MyGames', icon: Gamepad2, label: 'My Games' },
     ];
 
     const navLinks = isStudent ? studentLinks : teacherLinks;
@@ -43,14 +43,14 @@ export const Layout = () => {
         <div className="flex h-screen bg-light-bg dark:bg-dark-bg text-text-main dark:text-gray-100 font-display transition-colors duration-300">
             {/* Sidebar for Desktop */}
             <aside className="hidden md:flex w-64 flex-col glass-panel border-r border-slate-200 dark:border-white/10 dark:bg-card-bg/50">
-                <div className="p-6 border-b border-slate-200 dark:border-white/10 flex items-center gap-3">
+                <a href='/' className="p-6 border-b border-slate-200 dark:border-white/10 flex items-center gap-3">
                     <div className="size-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
                         <span className="material-symbols-outlined text-xl">school</span>
                     </div>
                     <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
                         English Quest
                     </span>
-                </div>
+                </a>
 
                 <nav className="flex-1 p-4 space-y-2">
                     {navLinks.map((link) => {
@@ -99,13 +99,13 @@ export const Layout = () => {
 
             {/* Mobile Header & Content */}
             <div className="flex-1 flex flex-col overflow-hidden">
-                <header className="md:hidden h-16 glass-panel border-b border-slate-200 dark:border-white/10 flex items-center justify-between px-4 sticky top-0 z-50">
-                    <div className="flex items-center gap-2">
-                        <div className="size-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+                <header className="md:hidden h-16 glass-panel border-b border-slate-200 dark:border-white/10 flex items-center justify-between px-4 sticky top-0 z-50 gap-4">
+                    <a href='/' className="flex items-center gap-2 truncate">
+                        <div className="size-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary shrink-0">
                             <span className="material-symbols-outlined text-xl">school</span>
                         </div>
-                        <span className="font-bold text-lg">English Quest</span>
-                    </div>
+                        <span className="font-bold text-lg truncate">English Quest</span>
+                    </a>
                     <button
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                         className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 relative z-50"
@@ -171,7 +171,7 @@ export const Layout = () => {
                 </div>
 
                 {/* Main Content Area */}
-                <main className="flex-1 overflow-auto p-4 md:p-8 relative">
+                <main className="flex-1 overflow-auto p-4 md:p-8 relative pb-24 md:pb-8">
                     {/* Background Gradients */}
                     <div className="fixed inset-0 z-0 pointer-events-none">
                         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 dark:bg-primary/10 blur-[120px]"></div>

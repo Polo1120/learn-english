@@ -15,15 +15,20 @@ const GAME_CONFIG: Record<GameType, Omit<GameConstants, 'type'>> = {
         badgeColor: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
         icon: 'quiz',
     },
-    hangman: {
+    word_image: {
         image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDhEH3Tu7lEnWvApN1MW-89IlAVKCC5PjtmgcgMrri42PxHJVSNXAYCYjzvepRnxtgNYWtnUCVSNclME3qA9aRwxDkvUiOib22ibpz4L_Ps7VrXAWyy0ZhtE74grKXIHgkPE8hQOxHZy6Mi4_gnb2GzCGn1jgXggbYbIlDhzoZq9_3zQxeSalb4QQmp8FPMa8aE6PebVziqOorMT7Xt0Uou4nqN68IsY5w21pJukXLvCyvUhs3PlmV_yeJ5xI8K2wrPN0Qb0jbU1Mo',
-        badgeColor: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-        icon: 'videogame_asset',
+        badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+        icon: 'image',
     },
     flashcard: {
         image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAmAvLgLll1HVpfec7X8kNSY1q9N5OV0kD5xuUUQfAVSd5UrI3XrnVnwy6P9PTez4nHrxQNWYvuOxOZsntcac0rH1oBBj1BWtQMA9-PzBQOXPr6GZGeZhwkuK0vWtKYZYUPGyxLM7TutUx4hnJmYChnWui8wXflRvXFbLCN1DCKFsKJLMKkiiX-Qr-8zuYtSlllXdeBrembjxvk-GRx5zxqthJBgYVWzn6ImWK9CXTBmukHo3uRzEqnGrdRtLEvvcId2q_MGKXWKRs',
         badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
         icon: 'style',
+    },
+    maze_game: {
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB5PXIqb6ojtyROsXCNUUxwknPxiy11kplOLIwcvd8YRagZHZylOS5VMO3siDyHV7o5fWYO-XNENCa0Ent8MK09MgazKSQHwJnFsF24xInMrsi4aRJlpo83_7CjI8l0Zsn5UbSNFmrbuo1mRPD3ZtYLNFMWY2SAEjaLEBOCHH70OyW3TcacQ1W8QRCyuaXK5Mw93rKFOLcZCMXA84jwXVGNCUxCG0y0Px5gOZFl9y-Qh6UBM36fZi9hdyHFVDVefwJRCs1n9_P9A7I',
+        badgeColor: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+        icon: 'map',
     },
 };
 
@@ -43,12 +48,14 @@ export const getGameConstants = (type: string): GameConstants => {
 
 export const GAME_TYPE_OPTIONS = [
     { value: 'quiz', label: 'Quiz' },
-    { value: 'hangman', label: 'Ahorcado' },
+    { value: 'word_image', label: 'Word Image' },
     { value: 'flashcard', label: 'Flashcards' },
+    { value: 'maze_game', label: 'Word Wanderer' },
 ];
 
 export const GAME_TYPE_LABELS: Record<GameType, string> = {
     quiz: 'Quiz',
-    hangman: 'Ahorcado',
+    word_image: 'Word Image',
     flashcard: 'Flashcards',
+    maze_game: 'Word Wanderer',
 };

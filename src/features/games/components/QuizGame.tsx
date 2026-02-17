@@ -3,7 +3,7 @@ import { cn } from '../../../shared/lib/utils';
 import { GameHeader } from './GameHeader';
 import { useNavigate } from 'react-router-dom';
 import type { Question } from '../../../shared/types';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Loader2 } from 'lucide-react';
 
 interface QuizGameProps {
     questions: Question[];
@@ -11,9 +11,10 @@ interface QuizGameProps {
     onShare?: () => void;
     onExit?: () => void;
     onAssign?: () => void;
+    isSubmitting?: boolean;
 }
 
-export const QuizGame = ({ questions, onGameComplete, onShare, onAssign }: QuizGameProps) => {
+export const QuizGame = ({ questions, onGameComplete, onShare, onAssign, isSubmitting, onExit }: QuizGameProps) => {
     const navigate = useNavigate();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [score, setScore] = useState(0);
@@ -43,7 +44,13 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign }: QuizG
 
 
 
-    const handleExit = () => navigate('/');
+    const handleExit = () => {
+        if (onExit) {
+            onExit();
+        } else {
+            navigate('/');
+        }
+    };
 
     const handleAnswerClick = (index: number) => {
         if (isAnswered) return;
@@ -65,7 +72,7 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign }: QuizG
         } else {
             setShowScore(true);
             if (onGameComplete) {
-                onGameComplete(score + (questions[currentIndex].correctAnswer === selectedAnswer ? 1 : 0), elapsedTime);
+                onGameComplete(score, elapsedTime);
             }
         }
     };
@@ -99,7 +106,7 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign }: QuizG
     if (showScore) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark p-4">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8 sm:p-12 text-center max-w-lg w-full">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 p-8 sm:p-12 text-center max-w-lg w-full">
                     <h2 className="text-3xl font-extrabold mb-6 text-[#111318] dark:text-white">Quiz Completed!</h2>
                     <div className="text-6xl font-black text-primary mb-6">
                         {score} / {questions.length}
@@ -112,12 +119,19 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign }: QuizG
                     </p>
                     <div className="flex flex-col gap-3">
                         {!onGameComplete && (
-                            <button onClick={resetQuiz} className="flex items-center justify-center gap-2 w-full h-12 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-primary/30">
-                                <RefreshCw size={20} /> Play Again
+                            <button
+                                onClick={resetQuiz}
+                                className="flex min-w-[240px] cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-2xl h-16 px-10 bg-primary hover:bg-primary-dark text-white text-xl font-black leading-normal tracking-wide shadow-[0_10px_25px_-5px_rgba(var(--primary-rgb),0.4)] transition-all active:scale-95 group"
+                            >
+                                <RefreshCw className="group-hover:rotate-180 transition-transform duration-500" size={24} />
+                                <span>Play Again</span>
                             </button>
                         )}
-                        <button onClick={handleExit} className="flex items-center justify-center gap-2 w-full h-12 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-[#111318] dark:text-white rounded-xl font-bold transition-all">
-                            Exit to Home
+                        <button
+                            onClick={handleExit}
+                            className="flex items-center justify-center gap-3 w-full h-14 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-[#111318] dark:text-white rounded-2xl font-bold transition-all"
+                        >
+                            <span className="material-symbols-outlined">home</span> Back to Hub
                         </button>
                     </div>
                 </div>
@@ -136,8 +150,9 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign }: QuizG
                 <div className="w-full max-w-[960px] flex flex-col gap-6">
 
                     <GameHeader
-                        title="Jugando Quiz"
+                        title="Quiz Session"
                         onShare={onShare}
+                        onExit={handleExit}
                     >
                         {onAssign && (
                             <button
@@ -150,7 +165,7 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign }: QuizG
                         )}
                     </GameHeader>
                     {/* Progress and Stats Bar */}
-                    <div className="w-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-[#e5e7eb] dark:border-gray-800 p-5 flex flex-col gap-4">
+                    <div className="w-full bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-5 flex flex-col gap-4">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm sm:text-base font-bold text-[#111318] dark:text-white gap-2">
                             <span className="flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary">help</span>
@@ -171,18 +186,18 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign }: QuizG
 
                     <div className="flex flex-col gap-6">
 
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-[#e5e7eb] dark:border-gray-800 p-8 sm:p-12 text-center flex flex-col justify-center min-h-[240px] relative overflow-hidden group">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 p-8 sm:p-12 text-center flex flex-col justify-center min-h-[240px] relative overflow-hidden group">
 
                             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-indigo-400 to-primary"></div>
                             <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl"></div>
                             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl"></div>
-                            <h1 className="relative z-10 text-[#111318] dark:text-white text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight tracking-tight">
+                            <h2 className="relative z-10 text-[#111318] dark:text-white text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight tracking-tight">
                                 {currentQuestion.text}
-                            </h1>
+                            </h2>
                         </div>
 
 
-                        <div className="grid grid-cols-1 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:gap-6">
                             {currentQuestion.options.map((option, index) => {
                                 const isCorrect = index === currentQuestion.correctAnswer;
                                 const isSelected = selectedAnswer === index;
@@ -197,13 +212,13 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign }: QuizG
                                         className={cn(
                                             "relative flex items-center p-6 gap-4 rounded-xl border-2 transition-all duration-200 transform group",
                                             // Default State (Not Answered)
-                                            !isAnswered && "bg-white dark:bg-gray-800 border-transparent hover:border-primary/50 hover:shadow-lg dark:hover:shadow-primary/10 hover:-translate-y-1",
+                                            !isAnswered && "bg-white dark:bg-gray-800 border-gray-100 dark:border-transparent hover:border-primary/50 hover:shadow-lg dark:hover:shadow-primary/10 hover:-translate-y-1",
                                             // Correct State
                                             isAnswered && isCorrect && "bg-green-500 text-white border-green-500 shadow-md shadow-green-500/20 scale-[1.02]",
                                             // Wrong State
                                             isAnswered && isWrong && "bg-red-500 text-white border-red-500 shadow-md",
                                             // Other State (Disabled)
-                                            isAnswered && !isCorrect && !isSelected && "border-transparent bg-gray-50 dark:bg-gray-800/50 opacity-[0.2] cursor-not-allowed"
+                                            isAnswered && !isCorrect && !isSelected && "border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 opacity-[0.4] cursor-not-allowed"
                                         )}
                                     >
                                         <div className={cn(
@@ -242,18 +257,27 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign }: QuizG
 
 
                     {isAnswered && (
-                        <div className="flex justify-end pt-2 pb-6 animate-fade-in-up">
+                        <div className="flex justify-center pt-8 pb-10 animate-fade-in-up">
                             <button
                                 onClick={handleNextQuestion}
-                                className="flex min-w-[160px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-xl h-14 px-8 bg-primary hover:bg-primary-dark text-white text-lg font-bold leading-normal tracking-[0.015em] shadow-lg shadow-primary/30 transition-all active:scale-95"
+                                className="flex min-w-[240px] cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-2xl h-16 px-10 bg-primary hover:bg-primary-dark text-white text-xl font-black leading-normal tracking-wide shadow-[0_10px_25px_-5px_rgba(var(--primary-rgb),0.4)] transition-all active:scale-95 group"
                             >
                                 <span>{currentIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'}</span>
-                                <span className="material-symbols-outlined">arrow_forward</span>
+                                <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
                             </button>
                         </div>
                     )}
                 </div>
             </main>
+            {isSubmitting && (
+                <div className="fixed inset-0 z-[100] bg-white/80 dark:bg-dark-bg/80 backdrop-blur-sm flex items-center justify-center">
+                    <div className="text-center">
+                        <Loader2 className="animate-spin text-primary mx-auto mb-4" size={48} />
+                        <h3 className="text-xl font-bold">Submitting results...</h3>
+                        <p className="text-slate-500">Please wait a moment</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

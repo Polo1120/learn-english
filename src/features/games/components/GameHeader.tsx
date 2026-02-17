@@ -11,16 +11,16 @@ interface GameHeaderProps {
 export const GameHeader = ({ title, onShare, onExit, children }: GameHeaderProps) => {
     const { profile } = useAuth();
     return (
-        <div className="flex items-center justify-between w-full">
+        <div className="flex items-start w-full flex-col sm:flex-row gap-4">
             <div className="flex items-center gap-4 text-[#111318] dark:text-white">
                 <div className="size-8 flex items-center justify-center text-primary-legacy-DEFAULT dark:text-primary">
                     <span className="material-symbols-outlined !text-3xl">school</span>
                 </div>
-                <h2 className="text-[#111318] dark:text-white text-xl font-extrabold leading-tight tracking-[-0.015em]">
+                <h1 className="text-[#111318] dark:text-white text-xl font-extrabold leading-tight tracking-[-0.015em]">
                     {title}
-                </h2>
+                </h1>
             </div>
-            <div className="flex flex-1 justify-end gap-3 sm:gap-6 items-center">
+            <div className="flex flex-wrap flex-1 justify-end gap-2 sm:gap-6 items-center self-end">
 
                 {onShare && profile?.role === 'teacher' && (
                     <button

@@ -34,7 +34,7 @@ export const useGameSession = ({ sessionId }: UseGameSessionProps) => {
     useEffect(() => {
         const loadSession = async () => {
             if (!sessionId) {
-                setError('Código de sesión inválido');
+                setError('Invalid session code');
                 setLoading(false);
                 return;
             }
@@ -43,13 +43,13 @@ export const useGameSession = ({ sessionId }: UseGameSessionProps) => {
                 const sessionData = await sessionService.getSessionByCode(sessionId);
 
                 if (!sessionData) {
-                    setError('Sesión no encontrada');
+                    setError('Session not found');
                     setLoading(false);
                     return;
                 }
 
                 if (!sessionService.isSessionActive(sessionData)) {
-                    setError('Esta sesión ha expirado o está inactiva');
+                    setError('This session has expired or is inactive');
                     setLoading(false);
                     return;
                 }
@@ -85,7 +85,7 @@ export const useGameSession = ({ sessionId }: UseGameSessionProps) => {
                 setLoading(false);
             } catch (err) {
                 console.error('Error loading session:', err);
-                setError('Error al cargar la sesión');
+                setError('Error loading the session');
                 setLoading(false);
             }
         };
@@ -141,20 +141,20 @@ export const useGameSession = ({ sessionId }: UseGameSessionProps) => {
         } catch (err: any) {
             console.error('Error submitting score:', err);
 
-            if (err.message?.includes('límite')) {
+            if (err.message?.includes('límite') || err.message?.includes('limit')) {
                 setAlertModal({
                     isOpen: true,
-                    title: 'Límite Alcanzado',
+                    title: 'Limit Reached',
                     message: err.message
                 });
                 setGameCompleted(true);
                 localStorage.setItem(GAME_COMPLETED_KEY + sessionId, 'true');
                 setCanPlayAgain(false);
-            } else if (err.message?.includes('No superaste')) {
+            } else if (err.message?.includes('No superaste') || err.message?.includes('not beat')) {
                 setAlertModal({
                     isOpen: true,
-                    title: 'Puntuación no superada',
-                    message: err.message + '\n\nTu mejor puntuación se mantiene en el leaderboard.'
+                    title: 'Score not beaten',
+                    message: err.message + '\n\nYour best score remains on the leaderboard.'
                 });
                 setGameCompleted(true);
                 localStorage.setItem(GAME_COMPLETED_KEY + sessionId, 'true');
@@ -162,7 +162,7 @@ export const useGameSession = ({ sessionId }: UseGameSessionProps) => {
                 setAlertModal({
                     isOpen: true,
                     title: 'Error',
-                    message: 'Error al enviar puntuación. Por favor intenta de nuevo.'
+                    message: 'Error sending score. Please try again.'
                 });
             }
         } finally {
@@ -175,7 +175,8 @@ export const useGameSession = ({ sessionId }: UseGameSessionProps) => {
     const resetGame = () => {
         if (!sessionId) return;
         localStorage.removeItem(GAME_COMPLETED_KEY + sessionId);
-        window.location.reload();
+        setGameCompleted(false);
+        // Removed window.location.reload() for a smoother "Play Again" experience
     };
 
     return {
@@ -191,6 +192,7 @@ export const useGameSession = ({ sessionId }: UseGameSessionProps) => {
         handleGameComplete,
         closeAlertModal,
         resetGame,
-        setGameCompleted // In case strict mode causes issues or external triggers needed
+        setGameCompleted,
+        submittingScore
     };
 };

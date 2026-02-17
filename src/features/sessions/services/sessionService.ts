@@ -178,7 +178,7 @@ export const sessionService = {
                 const currentAttempts = existing.attempts || 1;
 
                 if (session.max_attempts && currentAttempts >= session.max_attempts) {
-                    throw new Error(`Has alcanzado el límite de ${session.max_attempts} intento(s) para esta sesión`);
+                    throw new Error(`You have reached the limit of ${session.max_attempts} attempt(s) for this session`);
                 }
 
                 // Increment attempts regardless of score improvement
@@ -215,7 +215,7 @@ export const sessionService = {
 
                     if (error) throw error;
 
-                    throw new Error('No superaste tu puntuación anterior');
+                    throw new Error('You did not beat your previous score');
                 }
             }
 
@@ -323,7 +323,7 @@ export const sessionService = {
         }
     },
 
-    async getUserSessions(): Promise<GameSessionExpanded[]> {
+    async getUserSessions(): Promise<(GameSessionExpanded & { studentCount: number })[]> {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
@@ -332,7 +332,7 @@ export const sessionService = {
 
             const { data: sessions, error } = await supabase
                 .from('game_sessions')
-                .select('*')
+                .select('*, scores:session_scores(count)')
                 .eq('creator_id', user.id)
                 .order('created_at', { ascending: false });
 
@@ -340,7 +340,7 @@ export const sessionService = {
             if (!sessions) return [];
 
             const sessionsWithGames = await Promise.all(
-                sessions.map(async (session) => {
+                sessions.map(async (session: any) => {
                     const { data: game } = await supabase
                         .from('games')
                         .select('*')
@@ -349,6 +349,7 @@ export const sessionService = {
 
                     return {
                         ...session,
+                        studentCount: session.scores?.[0]?.count || 0,
                         expand: {
                             game: game || undefined,
                         },
@@ -377,5 +378,23 @@ export const sessionService = {
             console.error('Error fetching user scores:', error);
             return [];
         }
+    },
+
+    subscribeToAllUserSessions(callback: (payload: any) => void) {
+        const channel = supabase
+            .channel('all_sessions_scores')
+            .on('postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'session_scores'
+                },
+                callback
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     },
 };

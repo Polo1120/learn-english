@@ -55,7 +55,7 @@ export const StudentGameHistory = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">My Games History</h1>
+            <h1 className="page-title">My Games History</h1>
 
             {history.length === 0 ? (
                 <div className="glass-panel p-12 rounded-2xl border border-slate-200 dark:border-white/10 text-center">
@@ -68,7 +68,7 @@ export const StudentGameHistory = () => {
                     </p>
                 </div>
             ) : (
-                <div className="grid gap-4">
+                <div className="grid grid-cols-1 gap-4">
                     {history.map((entry) => (
                         <div key={entry.id} className="glass-panel p-6 rounded-xl border border-slate-200 dark:border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-primary/30 transition-colors">
                             <div className="flex items-center gap-4">

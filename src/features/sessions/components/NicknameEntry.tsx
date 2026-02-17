@@ -19,18 +19,18 @@ export const NicknameEntry = ({ onSubmit, sessionTitle }: NicknameEntryProps) =>
 
         // Validation
         if (trimmedNickname.length < 3) {
-            setError('El apodo debe tener al menos 3 caracteres');
+            setError('The nickname must have at least 3 characters');
             return;
         }
 
         if (trimmedNickname.length > 20) {
-            setError('El apodo no puede tener más de 20 caracteres');
+            setError('The nickname cannot have more than 20 characters');
             return;
         }
 
         // Only allow alphanumeric and spaces
         if (!/^[a-zA-Z0-9\s]+$/.test(trimmedNickname)) {
-            setError('Solo se permiten letras, números y espacios');
+            setError('Only letters, numbers and spaces are allowed');
             return;
         }
 
@@ -70,14 +70,14 @@ export const NicknameEntry = ({ onSubmit, sessionTitle }: NicknameEntryProps) =>
                         {sessionTitle}
                     </h1>
                     <p className="text-text-sub dark:text-gray-400">
-                        Ingresa tu apodo para unirte a la sesión
+                        Enter your nickname to join the session
                     </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label htmlFor="nickname" className="block text-sm font-bold mb-2 text-slate-700 dark:text-gray-300">
-                            Tu Apodo
+                            Your Nickname
                         </label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -91,18 +91,18 @@ export const NicknameEntry = ({ onSubmit, sessionTitle }: NicknameEntryProps) =>
                                     setNickname(e.target.value);
                                     setError('');
                                 }}
-                                placeholder="Ej: EagleEye, FastLearner..."
-                                className="w-full pl-11 pr-4 py-3 bg-[rgba(241,245,249,0.5)] dark:bg-white/5 border border-[rgba(203,213,225,0.6)] dark:border-white/10 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-text-main dark:text-white placeholder-slate-400 dark:placeholder-gray-500"
+                                placeholder="Ex: EagleEye, FastLearner..."
+                                className="w-full pl-11 pr-4 py-3 bg-[rgba(241,245,249,0.5)] dark:bg-white/5 border border-[rgba(148,163,184,0.4)] dark:border-white/10 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-text-main dark:text-white placeholder-slate-400 dark:placeholder-gray-500"
                                 maxLength={20}
                                 autoFocus
                             />
                         </div>
                         <div className="flex justify-between mt-2">
                             <p className="text-xs text-text-sub dark:text-gray-500">
-                                3-20 caracteres
+                                3-20 characters
                             </p>
                             <p className="text-xs text-text-sub dark:text-gray-500">
-                                Letras y números
+                                Letters and numbers
                             </p>
                         </div>
 
@@ -120,15 +120,15 @@ export const NicknameEntry = ({ onSubmit, sessionTitle }: NicknameEntryProps) =>
                         className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary hover:from-emerald-400 hover:to-cyan-300 text-white font-bold h-12 rounded-xl text-base shadow-lg shadow-emerald-500/30 hover:shadow-primary/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
                         disabled={nickname.trim().length < 3}
                     >
-                        <span>Unirse a la Partida</span>
+                        <span>Join the Game</span>
                         <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                     </button>
                 </form>
 
-                <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/10 text-center">
+                <div className="mt-8 pt-6 border-t border-slate-300 dark:border-white/10 text-center">
                     <p className="text-xs text-text-sub dark:text-gray-500 flex items-center justify-center gap-2">
                         <span className="material-symbols-outlined text-sm">info</span>
-                        Tu apodo debe ser único en esta sesión
+                        Your nickname must be unique in this session
                     </p>
                 </div>
             </div>

@@ -40,9 +40,9 @@ export const initialGames: Omit<Game, 'id'>[] = [
         }
     },
     {
-        title: 'Animals Hangman',
+        title: 'Word Image Animals',
         description: 'Guess the animal names.',
-        type: 'hangman',
+        type: 'word_image',
         content: {
             words: [
                 { word: 'ELEPHANT', hint: 'Has a long trunk' },
