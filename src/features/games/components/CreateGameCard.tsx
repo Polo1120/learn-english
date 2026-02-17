@@ -11,7 +11,7 @@ export const CreateGameCard = () => {
       </div>
       <h3 className="text-lg font-bold text-[#111318] dark:text-white mb-1">Create New Game</h3>
       <p className="text-[#637588] dark:text-gray-400 text-sm text-center px-6">
-        Add a new quiz, hangman, or flashcard set.
+        Add a new quiz, space word mission, or flashcard set.
       </p>
     </Link>
   );

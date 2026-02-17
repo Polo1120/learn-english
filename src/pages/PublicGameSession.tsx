@@ -4,7 +4,7 @@ import { AlertCircle } from 'lucide-react';
 import { ConfirmationModal } from '../shared/components/ConfirmationModal';
 import { NicknameEntry } from '../features/sessions/components/NicknameEntry';
 import { QuizGame } from '../features/games/components/QuizGame';
-import { HangmanGame } from '../features/games/components/HangmanGame';
+import { WordImageGame } from '../features/games/components/WordImageGame';
 import { useGameSession } from '../features/sessions/hooks/useGameSession';
 import { Leaderboard } from '../features/sessions/components/Leaderboard';
 import { CelebrationCard } from '../features/sessions/components/CelebrationCard';
@@ -25,7 +25,8 @@ export const PublicGameSession = () => {
         handleNicknameSubmit,
         handleGameComplete,
         closeAlertModal,
-        resetGame
+        resetGame,
+        submittingScore
     } = useGameSession({ sessionId });
 
     if (loading) return <SessionLoading />;
@@ -48,7 +49,7 @@ export const PublicGameSession = () => {
                 onShare={() => {
                     navigator.share?.({
                         title: session.title,
-                        text: '¡Únete a esta sesión de juego!',
+                        text: 'Join this game session!',
                         url: window.location.href,
                     });
                 }}
@@ -68,7 +69,7 @@ export const PublicGameSession = () => {
                 <div className="card max-w-md text-center">
                     <AlertCircle className="mx-auto mb-4 text-red-500" size={48} />
                     <h2 className="text-2xl font-bold mb-2">Error</h2>
-                    <p className="text-slate-600">No se pudo cargar el juego</p>
+                    <p className="text-slate-600">Could not load the game</p>
                 </div>
             </div>
         );
@@ -76,7 +77,7 @@ export const PublicGameSession = () => {
 
     // GAMEPLAY STATE
     const isQuiz = game?.type === 'quiz';
-    const isHangman = game?.type === 'hangman';
+    const isWordImage = game?.type === 'word_image';
     const bestScore = Math.max(...scores.map(s => s.score), 0);
 
     return (
@@ -105,17 +106,19 @@ export const PublicGameSession = () => {
                             <QuizGame
                                 questions={game.content.questions}
                                 onGameComplete={handleGameComplete}
+                                isSubmitting={submittingScore}
                             />
                         )}
-                        {isHangman && game.content.words && (
-                            <HangmanGame
+                        {isWordImage && game.content.words && (
+                            <WordImageGame
                                 words={game.content.words}
                                 onGameComplete={handleGameComplete}
+                                isSubmitting={submittingScore}
                             />
                         )}
-                        {!isQuiz && !isHangman && (
+                        {!isQuiz && !isWordImage && (
                             <div className="glass-panel text-slate-900 dark:text-gray-400 p-8 text-center bg-white/50 dark:bg-white/5">
-                                Juego no soportado en esta vista.
+                                Game type not supported in this view.
                             </div>
                         )}
                     </div>
@@ -133,9 +136,9 @@ export const PublicGameSession = () => {
                 onConfirm={closeAlertModal}
                 title={alertModal.title}
                 message={alertModal.message}
-                confirmText="Entendido"
+                confirmText="Got it"
                 variant="primary"
-                cancelText="Cerrar"
+                cancelText="Close"
             />
         </div>
     );

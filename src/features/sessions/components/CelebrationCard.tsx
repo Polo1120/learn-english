@@ -20,6 +20,7 @@ interface CelebrationCardProps {
 
 export const CelebrationCard = ({
     sessionId,
+    sessionTitle,
     nickname,
     scores,
     canPlayAgain,
@@ -41,7 +42,7 @@ export const CelebrationCard = ({
                         <div className="size-8 flex items-center justify-center bg-primary rounded-lg text-white">
                             <span className="material-symbols-outlined text-xl">school</span>
                         </div>
-                        <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">English Quest</h2>
+                        <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">{sessionTitle}</h2>
                     </div>
                     {/* Live Indicator */}
                     <div className="hidden sm:flex items-center gap-2 bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20">
@@ -82,14 +83,14 @@ export const CelebrationCard = ({
                             <div className="flex flex-col gap-6 items-center md:items-start text-center md:text-left flex-1">
                                 <div className="flex flex-col gap-2">
                                     <h1 className="text-white text-4xl md:text-5xl font-black leading-tight tracking-[-0.033em] bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                                        ¡Juego Completado!
+                                        Game Completed!
                                     </h1>
                                     <h2 className="text-gray-300 text-lg font-medium leading-normal">
-                                        Gracias por participar, <span className="text-white font-bold">{nickname}</span>.
+                                        Thanks for participating, <span className="text-white font-bold">{nickname}</span>.
                                     </h2>
                                     {!canPlayAgain && (
                                         <p className="text-yellow-500/90 text-sm font-medium bg-yellow-500/10 px-3 py-1 rounded-lg w-fit mx-auto md:mx-0 mt-2 border border-yellow-500/20">
-                                            ⚠️ Has alcanzado el límite de intentos
+                                            ⚠️ You have reached the attempt limit
                                         </p>
                                     )}
                                 </div>
@@ -99,7 +100,7 @@ export const CelebrationCard = ({
                                         className="flex min-w-[140px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full h-12 px-6 bg-primary hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(19,91,236,0.4)] text-white text-base font-bold leading-normal tracking-[0.015em]"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">share</span>
-                                        <span className="truncate">Compartir</span>
+                                        <span className="truncate">Share</span>
                                     </button>
                                     {canPlayAgain && (
                                         <button
@@ -107,7 +108,7 @@ export const CelebrationCard = ({
                                             className="flex min-w-[140px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full h-12 px-6 bg-transparent border border-gray-600 hover:bg-white/5 transition-all text-white text-base font-bold leading-normal tracking-[0.015em]"
                                         >
                                             <span className="material-symbols-outlined text-[20px]">replay</span>
-                                            <span className="truncate">Jugar de Nuevo</span>
+                                            <span className="truncate">Play Again</span>
                                         </button>
                                     )}
                                 </div>
@@ -117,26 +118,26 @@ export const CelebrationCard = ({
                         {/* Leaderboard Section */}
                         <div className="flex flex-col gap-4">
                             <div className="flex items-center justify-between px-2">
-                                <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">Tabla de Clasificación</h2>
+                                <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em]">Leaderboard</h2>
                                 <div className="text-xs text-gray-400 flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-sm">schedule</span> En vivo
+                                    <span className="material-symbols-outlined text-sm">schedule</span> Live
                                 </div>
                             </div>
                             <div className="glass-panel rounded-xl overflow-hidden">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-[#1c1f27]/50 border-b border-white/5 text-gray-400 text-sm font-medium uppercase tracking-wider">
-                                            <th className="px-6 py-4 w-24">Posición</th>
+                                            <th className="px-6 py-4 w-24">Rank</th>
                                             <th className="px-6 py-4">Nickname</th>
-                                            <th className="px-6 py-4 text-right">Puntuación</th>
-                                            <th className="px-6 py-4 text-right hidden sm:table-cell">Tiempo</th>
+                                            <th className="px-6 py-4 text-right">Score</th>
+                                            <th className="px-6 py-4 text-right hidden sm:table-cell">Time</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
                                         {scores.length === 0 ? (
                                             <tr>
                                                 <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                                                    Esperando puntuaciones...
+                                                    Waiting for scores...
                                                 </td>
                                             </tr>
                                         ) : (
@@ -179,7 +180,7 @@ export const CelebrationCard = ({
                                                                 </div>
                                                                 <div className="flex flex-col">
                                                                     <span className={`font-medium ${isCurrentUser ? 'text-white font-bold text-lg' : 'text-white'}`}>
-                                                                        {score.nickname} {isCurrentUser && '(Tú)'}
+                                                                        {score.nickname} {isCurrentUser && '(You)'}
                                                                     </span>
                                                                 </div>
                                                             </div>
@@ -219,9 +220,9 @@ export const CelebrationCard = ({
                 onConfirm={alertModal.onClose}
                 title={alertModal.title}
                 message={alertModal.message}
-                confirmText="Entendido"
+                confirmText="Got it"
                 variant="primary"
-                cancelText="Cerrar"
+                cancelText="Close"
             />
         </div>
     );

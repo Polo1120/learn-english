@@ -7,6 +7,10 @@ import { Loader2, AlertCircle } from 'lucide-react';
 import { ConfirmationModal } from '../shared/components/ConfirmationModal';
 import { GameCard } from '../features/games/components/GameCard';
 import { CreateGameCard } from '../features/games/components/CreateGameCard';
+import { CreateSessionModal } from '../features/sessions/components/CreateSessionModal';
+import { AssignGameModal } from '../features/assignments/components/AssignGameModal';
+import { sessionService } from '../features/sessions/services/sessionService';
+import type { Game } from '../shared/types';
 
 export const Home = () => {
     const { games, deleteGame, loading: contentLoading, error: contentError } = useContent();
@@ -15,6 +19,14 @@ export const Home = () => {
         isOpen: false,
         gameId: null,
         title: ''
+    });
+    const [shareModal, setShareModal] = useState<{ isOpen: boolean; game: Game | null }>({
+        isOpen: false,
+        game: null
+    });
+    const [assignModal, setAssignModal] = useState<{ isOpen: boolean; game: Game | null }>({
+        isOpen: false,
+        game: null
     });
 
     const handleDeleteClick = (e: React.MouseEvent, id: string, title: string) => {
@@ -32,6 +44,22 @@ export const Home = () => {
                 setDeleteModal((prev) => ({ ...prev, isOpen: false }));
             }
         }
+    };
+
+    const handleShareClick = (e: React.MouseEvent, game: Game) => {
+        e.preventDefault();
+        setShareModal({ isOpen: true, game });
+    };
+
+    const handleAssignClick = (e: React.MouseEvent, game: Game) => {
+        e.preventDefault();
+        setAssignModal({ isOpen: true, game });
+    };
+
+    const handleCreateSession = async (title: string, durationHours: number, maxAttempts?: number): Promise<string> => {
+        if (!shareModal.game) throw new Error('Game not found');
+        const session = await sessionService.createSession(shareModal.game.id, title, durationHours, maxAttempts);
+        return session.session_id;
     };
 
     if (profileLoading || contentLoading) {
@@ -63,7 +91,7 @@ export const Home = () => {
     return (
         <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[#111318] dark:text-white">
+                <h1 className="page-title">
                     Available Learning Games
                 </h1>
                 <Link
@@ -77,7 +105,13 @@ export const Home = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {games.map((game) => (
-                    <GameCard key={game.id} game={game} onDelete={handleDeleteClick} />
+                    <GameCard
+                        key={game.id}
+                        game={game}
+                        onDelete={handleDeleteClick}
+                        onShare={profile?.role === 'teacher' ? handleShareClick : undefined}
+                        onAssign={profile?.role === 'teacher' ? handleAssignClick : undefined}
+                    />
                 ))}
                 <CreateGameCard />
             </div>
@@ -92,6 +126,24 @@ export const Home = () => {
                 cancelText="Cancel"
                 variant="danger"
             />
+
+            {shareModal.game && (
+                <CreateSessionModal
+                    game={shareModal.game}
+                    isOpen={shareModal.isOpen}
+                    onClose={() => setShareModal({ ...shareModal, isOpen: false })}
+                    onCreateSession={handleCreateSession}
+                />
+            )}
+
+            {assignModal.game && (
+                <AssignGameModal
+                    isOpen={assignModal.isOpen}
+                    onClose={() => setAssignModal({ ...assignModal, isOpen: false })}
+                    gameId={assignModal.game.id}
+                    gameTitle={assignModal.game.title}
+                />
+            )}
         </div>
     );
 };

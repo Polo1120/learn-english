@@ -49,7 +49,7 @@ export const StudentDashboard = () => {
             {/* Welcome Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
+                    <h1 className="page-title">
                         Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">{profile?.full_name?.split(' ')[0] || 'Student'}</span>! 👋
                     </h1>
                     <p className="text-slate-600 dark:text-slate-400 mt-2">

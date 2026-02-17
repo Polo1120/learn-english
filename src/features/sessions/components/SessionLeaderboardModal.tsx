@@ -3,12 +3,13 @@ import { sessionService } from '../services/sessionService';
 import type { SessionScore } from '../../../shared/types';
 
 interface SessionLeaderboardModalProps {
-    sessionId: string;
+    dbId: string; // The UUID 'id' from database
+    code: string; // The 8-char 'session_id'
     isOpen: boolean;
     onClose: () => void;
 }
 
-export const SessionLeaderboardModal = ({ sessionId, isOpen, onClose }: SessionLeaderboardModalProps) => {
+export const SessionLeaderboardModal = ({ dbId, code, isOpen, onClose }: SessionLeaderboardModalProps) => {
     const [scores, setScores] = useState<SessionScore[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -17,15 +18,15 @@ export const SessionLeaderboardModal = ({ sessionId, isOpen, onClose }: SessionL
 
         const fetchScores = async () => {
             setLoading(true);
-            const data = await sessionService.getLeaderboard(sessionId);
+            const data = await sessionService.getLeaderboard(code);
             setScores(data);
             setLoading(false);
         };
 
         fetchScores();
 
-        // Subscribe to real-time updates
-        const unsubscribe = sessionService.subscribeToLeaderboard(sessionId, (newScore) => {
+        // Subscribe to real-time updates using the UUID
+        const unsubscribe = sessionService.subscribeToLeaderboard(dbId, (newScore) => {
             setScores(prev => {
                 // Check if score already exists (update) or is new
                 const index = prev.findIndex(s => s.id === newScore.id);
@@ -48,7 +49,7 @@ export const SessionLeaderboardModal = ({ sessionId, isOpen, onClose }: SessionL
         return () => {
             unsubscribe();
         };
-    }, [sessionId, isOpen]);
+    }, [dbId, code, isOpen]);
 
     if (!isOpen) return null;
 

@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useContent } from '../../../context/ContentContext';
 import { gamesService } from '../services/gamesService';
-import type { GameType, Flashcard, Question, HangmanWord } from '../../../shared/types';
-import { Plus, Trash2, Save } from 'lucide-react';
+import type { GameType, Flashcard, Question, WordGuess } from '../../../shared/types';
+import { Plus, Trash2, Save, Image as ImageIcon } from 'lucide-react';
+import { supabase } from '../../../shared/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmationModal } from '../../../shared/components/ConfirmationModal';
 
@@ -27,11 +28,11 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
         shouldRedirect: false
     });
 
-    const [cards, setCards] = useState<Omit<Flashcard, 'id'>[]>([{ front: '', back: '' }]);
+    const [cards, setCards] = useState<Omit<Flashcard, 'id'>[]>([{ front: '', back: '', imageUrl: '' }]);
     const [questions, setQuestions] = useState<Omit<Question, 'id'>[]>([
         { text: '', options: ['', '', '', ''], correctAnswer: 0 }
     ]);
-    const [words, setWords] = useState<Omit<HangmanWord, 'id'>[]>([{ word: '', hint: '' }]);
+    const [words, setWords] = useState<Omit<WordGuess, 'id'>[]>([{ word: '', hint: '', imageUrl: '' }]);
 
     const [loading, setLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,10 +55,10 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
 
                 if (game.type === 'flashcard' && game.content.cards) {
                     setCards(game.content.cards);
-                } else if (game.type === 'quiz' && game.content.questions) {
+                } else if ((game.type === 'quiz' || game.type === 'maze_game') && game.content.questions) {
                     setQuestions(game.content.questions);
-                } else if (game.type === 'hangman' && game.content.words) {
-                    setWords(game.content.words);
+                } else if (game.type === 'word_image') {
+                    if (game.content.words) setWords(game.content.words);
                 }
             }
         } catch (error) {
@@ -68,14 +69,14 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
     };
 
     const handleAddCard = () => {
-        setCards([...cards, { front: '', back: '' }]);
+        setCards([...cards, { front: '', back: '', imageUrl: '' }]);
     };
 
     const handleRemoveCard = (index: number) => {
         setCards(cards.filter((_, i) => i !== index));
     };
 
-    const handleCardChange = (index: number, field: 'front' | 'back', value: string) => {
+    const handleCardChange = (index: number, field: keyof Omit<Flashcard, 'id'>, value: string) => {
         const newCards = [...cards];
         newCards[index][field] = value;
         setCards(newCards);
@@ -106,17 +107,44 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
     };
 
     const handleAddWord = () => {
-        setWords([...words, { word: '', hint: '' }]);
+        setWords([...words, { word: '', hint: '', imageUrl: '' }]);
     };
 
     const handleRemoveWord = (index: number) => {
         setWords(words.filter((_, i) => i !== index));
     };
 
-    const handleWordChange = (index: number, field: 'word' | 'hint', value: string) => {
+    const handleWordChange = (index: number, field: keyof Omit<WordGuess, 'id'>, value: string) => {
         const newWords = [...words];
         newWords[index][field] = value;
         setWords(newWords);
+    };
+
+    const handleFileUpload = async (index: number, file: File, itemType: 'flashcard' | 'word_image') => {
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const filePath = `game-images/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('games')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('games')
+                .getPublicUrl(filePath);
+
+            if (itemType === 'flashcard') {
+                handleCardChange(index, 'imageUrl', publicUrl);
+            } else {
+                handleWordChange(index, 'imageUrl', publicUrl);
+            }
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            alert('Error uploading image');
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -133,7 +161,7 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
             type,
             content: type === 'flashcard'
                 ? { cards: cards }
-                : type === 'quiz'
+                : (type === 'quiz' || type === 'maze_game')
                     ? { questions: questions }
                     : { words: words }
         };
@@ -196,7 +224,8 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
                 >
                     <option value="flashcard">Flashcards</option>
                     <option value="quiz">Quiz</option>
-                    <option value="hangman">Hangman</option>
+                    <option value="word_image">Word Image</option>
+                    <option value="maze_game">Word Wanderer (Maze)</option>
                 </select>
             </div>
 
@@ -235,52 +264,88 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
             <hr className="my-8 border-0 border-t border-slate-200" />
 
             <h3 className="mb-6 text-xl font-semibold">
-                {type === 'flashcard' ? 'Flashcards' : type === 'quiz' ? 'Questions' : 'Words'}
+                {type === 'flashcard' ? 'Flashcards' : (type === 'quiz' || type === 'maze_game') ? 'Questions' : 'Words'}
             </h3>
 
             {type === 'flashcard' ? (
-                <div className="flex  flex-col gap-6">
+                <div className="flex flex-col gap-8">
                     {cards.map((card, index) => (
-                        <div key={index} className="flex flex-col sm:flex-row bg-slate-50 dark:bg-[#1A2230] items-end gap-4 items-start p-4 rounded-xl">
-                            <div className="flex-1 w-full">
-                                <label className="label text-sm" htmlFor="front">Front (English)</label>
-                                <input
-                                    type="text"
-                                    id="front"
-                                    name="front"
-                                    value={card.front}
-                                    onChange={(e) => handleCardChange(index, 'front', e.target.value)}
-                                    className="input"
-                                    required
-                                />
+                        <div key={index} className="flex flex-col bg-slate-50 dark:bg-[#1A2230] p-6 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h4 className="font-bold text-slate-700 dark:text-slate-300">Flashcard {index + 1}</h4>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveCard(index)}
+                                    className="text-red-500 hover:text-red-600 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg"
+                                    disabled={cards.length === 1}
+                                >
+                                    <Trash2 size={20} />
+                                </button>
                             </div>
-                            <div className="flex-1 w-full" >
-                                <label className="label text-sm" htmlFor="back">Back (Translation/Meaning)</label>
-                                <input
-                                    type="text"
-                                    id="back"
-                                    name="back"
-                                    value={card.back}
-                                    onChange={(e) => handleCardChange(index, 'back', e.target.value)}
-                                    className="input"
-                                    required
-                                />
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-4">
+                                    <div className="form-group">
+                                        <label className="label text-sm">Front (English)</label>
+                                        <input
+                                            type="text"
+                                            value={card.front}
+                                            onChange={(e) => handleCardChange(index, 'front', e.target.value)}
+                                            className="input"
+                                            required
+                                            placeholder="e.g. House"
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="label text-sm">Back (Translation)</label>
+                                        <input
+                                            type="text"
+                                            value={card.back}
+                                            onChange={(e) => handleCardChange(index, 'back', e.target.value)}
+                                            className="input"
+                                            required
+                                            placeholder="e.g. Casa"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-4 transition-colors hover:border-primary/50 group bg-white dark:bg-[#12161f]">
+                                    {card.imageUrl ? (
+                                        <div className="relative group w-full aspect-video rounded-lg overflow-hidden">
+                                            <img src={card.imageUrl} alt="Flashcard" className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                                <label className="cursor-pointer bg-white text-black px-4 py-2 rounded-lg font-bold text-sm shadow-xl">
+                                                    Change Image
+                                                    <input
+                                                        type="file"
+                                                        className="hidden"
+                                                        accept="image/*"
+                                                        onChange={(e) => e.target.files?.[0] && handleFileUpload(index, e.target.files[0], 'flashcard')}
+                                                    />
+                                                </label>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <label className="cursor-pointer flex flex-col items-center text-slate-400 group-hover:text-primary transition-colors py-4">
+                                            <ImageIcon size={48} className="mb-2" />
+                                            <span className="text-sm font-bold">Upload Image</span>
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={(e) => e.target.files?.[0] && handleFileUpload(index, e.target.files[0], 'flashcard')}
+                                            />
+                                        </label>
+                                    )}
+                                </div>
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveCard(index)}
-                                className="mb-3 text-red-600 hover:text-red-700"
-                                disabled={cards.length === 1}
-                            >
-                                <Trash2 size={20} />
-                            </button>
                         </div>
                     ))}
                     <button type="button" onClick={handleAddCard} className="btn btn-outline self-start">
                         <Plus size={16} /> Add Card
                     </button>
                 </div>
-            ) : type === 'quiz' ? (
+            ) : (type === 'quiz' || type === 'maze_game') ? (
                 <div className="flex flex-col gap-8">
                     {questions.map((q, qIndex) => (
                         <div key={qIndex} className="p-6 bg-slate-50 dark:bg-[#1A2230] rounded-xl relative">
@@ -338,41 +403,77 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
                     </button>
                 </div>
             ) : (
-                <div className="flex flex-col gap-6">
+                <div className="grid grid-cols-1 gap-6">
                     {words.map((word, index) => (
-                        <div key={index} className="flex flex-col sm:flex-row gap-4 items-start p-4 bg-slate-50 dark:bg-[#1A2230] rounded-xl">
-                            <div className="flex-1 w-full">
-                                <label id={`word-${index}`} htmlFor="word" className="label text-sm">Word (English)</label>
-                                <input
-                                    type="text"
-                                    id="word"
-                                    name="word"
-                                    value={word.word}
-                                    onChange={(e) => handleWordChange(index, 'word', e.target.value)}
-                                    className="input"
-                                    required
-                                />
+                        <div key={index} className="flex flex-col bg-slate-50 dark:bg-[#1A2230] p-6 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h4 className="font-bold text-slate-700 dark:text-slate-300">Word {index + 1}</h4>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveWord(index)}
+                                    className="text-red-500 hover:text-red-600 transition-colors p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg"
+                                    disabled={words.length === 1}
+                                >
+                                    <Trash2 size={20} />
+                                </button>
                             </div>
-                            <div className="flex-1 w-full">
-                                <label className="label text-sm" htmlFor="hint">Hint</label>
-                                <input
-                                    type="text"
-                                    id="hint"
-                                    name="hint"
-                                    value={word.hint}
-                                    onChange={(e) => handleWordChange(index, 'hint', e.target.value)}
-                                    className="input"
-                                    required
-                                />
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-4">
+                                    <div className="form-group">
+                                        <label className="label text-sm">Word (English)</label>
+                                        <input
+                                            type="text"
+                                            value={word.word}
+                                            onChange={(e) => handleWordChange(index, 'word', e.target.value)}
+                                            className="input"
+                                            required
+                                            placeholder="e.g. Apple"
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="label text-sm">Hint</label>
+                                        <input
+                                            type="text"
+                                            value={word.hint}
+                                            onChange={(e) => handleWordChange(index, 'hint', e.target.value)}
+                                            className="input"
+                                            required
+                                            placeholder="e.g. A red fruit"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-4 transition-colors hover:border-primary/50 group bg-white dark:bg-[#12161f]">
+                                    {word.imageUrl ? (
+                                        <div className="relative group w-full aspect-video rounded-lg overflow-hidden">
+                                            <img src={word.imageUrl} alt="Word" className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                                <label className="cursor-pointer bg-white text-black px-4 py-2 rounded-lg font-bold text-sm shadow-xl">
+                                                    Change Image
+                                                    <input
+                                                        type="file"
+                                                        className="hidden"
+                                                        accept="image/*"
+                                                        onChange={(e) => e.target.files?.[0] && handleFileUpload(index, e.target.files[0], 'word_image')}
+                                                    />
+                                                </label>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <label className="cursor-pointer flex flex-col items-center text-slate-400 group-hover:text-primary transition-colors py-4">
+                                            <ImageIcon size={48} className="mb-2" />
+                                            <span className="text-sm font-bold">Upload Image</span>
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={(e) => e.target.files?.[0] && handleFileUpload(index, e.target.files[0], 'word_image')}
+                                            />
+                                        </label>
+                                    )}
+                                </div>
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveWord(index)}
-                                className="mt-7 text-red-600 hover:text-red-700"
-                                disabled={words.length === 1}
-                            >
-                                <Trash2 size={20} />
-                            </button>
                         </div>
                     ))}
                     <button type="button" onClick={handleAddWord} className="btn btn-outline self-start">

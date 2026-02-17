@@ -5,9 +5,9 @@ import { SessionLeaderboardModal } from '../features/sessions/components/Session
 import { Link } from 'react-router-dom';
 
 export const SessionsPage = () => {
-    const [sessions, setSessions] = useState<GameSessionExpanded[]>([]);
+    const [sessions, setSessions] = useState<(GameSessionExpanded & { studentCount: number })[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+    const [selectedSession, setSelectedSession] = useState<{ id: string, code: string } | null>(null);
 
     useEffect(() => {
         const fetchSessions = async () => {
@@ -18,12 +18,22 @@ export const SessionsPage = () => {
         };
 
         fetchSessions();
+
+        // Real-time updates for student counts
+        const subscription = sessionService.subscribeToAllUserSessions((payload) => {
+            console.log('Session score change detected:', payload);
+            fetchSessions(); // Refresh list to get updated counts
+        });
+
+        return () => {
+            subscription();
+        };
     }, []);
 
     const copySessionLink = (sessionId: string) => {
         const url = `${window.location.origin}/session/${sessionId}`;
         navigator.clipboard.writeText(url);
-        // You might want to add a toast notification here
+
         alert('Link copied to clipboard!');
     };
 
@@ -90,13 +100,20 @@ export const SessionsPage = () => {
                                     <span className="truncate">{session.expand?.game?.title || 'Unknown Game'}</span>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <button
-                                        onClick={() => setSelectedSessionId(session.session_id)}
+                                        onClick={() => setSelectedSession({ id: session.id, code: session.session_id })}
                                         className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
                                     >
-                                        <span className="material-symbols-outlined text-[18px]">leaderboard</span>
-                                        Scores
+                                        <div className="flex flex-col items-center">
+                                            <div className="flex items-center gap-1 leading-none">
+                                                <span className="material-symbols-outlined text-[18px]">leaderboard</span>
+                                                Scores
+                                            </div>
+                                            <span className="text-[10px] opacity-70 mt-0.5">
+                                                {session.studentCount} student{session.studentCount !== 1 ? 's' : ''}
+                                            </span>
+                                        </div>
                                     </button>
                                     <button
                                         onClick={() => copySessionLink(session.session_id)}
@@ -116,9 +133,10 @@ export const SessionsPage = () => {
             )}
 
             <SessionLeaderboardModal
-                sessionId={selectedSessionId || ''}
-                isOpen={!!selectedSessionId}
-                onClose={() => setSelectedSessionId(null)}
+                dbId={selectedSession?.id || ''}
+                code={selectedSession?.code || ''}
+                isOpen={!!selectedSession}
+                onClose={() => setSelectedSession(null)}
             />
         </div>
     );

@@ -1,10 +1,11 @@
 // Base types for game content
-export type GameType = 'flashcard' | 'quiz' | 'hangman';
+export type GameType = 'flashcard' | 'quiz' | 'word_image' | 'maze_game';
 
 export interface Flashcard {
     id?: string;
     front: string;
     back: string;
+    imageUrl?: string;
 }
 
 export interface Question {
@@ -14,16 +15,17 @@ export interface Question {
     correctAnswer: number;
 }
 
-export interface HangmanWord {
+export interface WordGuess {
     id?: string;
     word: string;
     hint: string;
+    imageUrl?: string;
 }
 
 export interface GameContent {
     cards?: Flashcard[];
     questions?: Question[];
-    words?: HangmanWord[];
+    words?: WordGuess[];
 }
 
 // Base Game interface
