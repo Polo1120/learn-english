@@ -6,14 +6,26 @@ import { gameHistoryService } from '../features/games/services/gameHistoryServic
 
 export const StudentDashboard = () => {
     const { profile } = useProfile();
-    const [stats, setStats] = useState({
-        totalGames: 0,
-        totalScore: 0,
-        averageScore: 0,
-        totalTime: 0
+    const [dashboardState, setDashboardState] = useState<{
+        stats: {
+            totalGames: number;
+            totalScore: number;
+            averageScore: number;
+            totalTime: number;
+        };
+        history: any[];
+        loading: boolean;
+    }>({
+        stats: {
+            totalGames: 0,
+            totalScore: 0,
+            averageScore: 0,
+            totalTime: 0
+        },
+        history: [],
+        loading: true
     });
-    const [history, setHistory] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { stats, history, loading } = dashboardState;
 
     useEffect(() => {
         if (!profile?.id) return;
@@ -24,12 +36,10 @@ export const StudentDashboard = () => {
                     gameHistoryService.getStudentStats(profile.id),
                     gameHistoryService.getStudentHistory(profile.id)
                 ]);
-                setStats(statsData);
-                setHistory(historyData);
+                setDashboardState({ stats: statsData, history: historyData, loading: false });
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
-            } finally {
-                setLoading(false);
+                setDashboardState((prev) => ({ ...prev, loading: false }));
             }
         };
 

@@ -121,7 +121,9 @@ export const Layout = () => {
                         }`}
                 >
                     {/* Backdrop */}
-                    <div
+                    <button
+                        type="button"
+                        aria-label="Close mobile menu"
                         className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm mt-16"
                         onClick={() => setIsMobileMenuOpen(false)}
                     />
@@ -130,7 +132,6 @@ export const Layout = () => {
                     <div
                         className={`absolute right-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white dark:bg-card-bg shadow-2xl p-4 flex flex-col transform transition-transform duration-300 ease-out border-l border-slate-200 dark:border-white/10 ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
                             }`}
-                        onClick={e => e.stopPropagation()}
                     >
                         <nav className="space-y-2 flex-1 mt-4">
                             {navLinks.map((link) => (

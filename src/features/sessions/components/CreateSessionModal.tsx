@@ -16,24 +16,27 @@ export const CreateSessionModal = ({
     onClose,
     onCreateSession
 }: CreateSessionModalProps) => {
-    const [title, setTitle] = useState(`${game.title} - Public Session`);
-    const [durationHours, setDurationHours] = useState(24);
-    const [maxAttempts, setMaxAttempts] = useState<number | undefined>(undefined);
-    const [isCreating, setIsCreating] = useState(false);
-    const [sessionCode, setSessionCode] = useState<string | null>(null);
-    const [copied, setCopied] = useState(false);
-    const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
+    const [state, setState] = useState({
+        title: `${game.title} - Public Session`,
+        durationHours: 24,
+        maxAttempts: undefined as number | undefined,
+        isCreating: false,
+        sessionCode: null as string | null,
+        copied: false,
+        errorModal: { isOpen: false, message: '' }
+    });
+    const { title, durationHours, maxAttempts, isCreating, sessionCode, copied, errorModal } = state;
 
     const handleCreate = async () => {
-        setIsCreating(true);
+        setState((prev) => ({ ...prev, isCreating: true }));
         try {
             const code = await onCreateSession(title, durationHours, maxAttempts);
-            setSessionCode(code);
+            setState((prev) => ({ ...prev, sessionCode: code }));
         } catch (error) {
             console.error('Error creating session:', error);
-            setErrorModal({ isOpen: true, message: 'Error creating session. Please try again.' });
+            setState((prev) => ({ ...prev, errorModal: { isOpen: true, message: 'Error creating session. Please try again.' } }));
         } finally {
-            setIsCreating(false);
+            setState((prev) => ({ ...prev, isCreating: false }));
         }
     };
 
@@ -45,8 +48,8 @@ export const CreateSessionModal = ({
     const handleCopy = async () => {
         try {
             await navigator.clipboard.writeText(getSessionUrl());
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            setState((prev) => ({ ...prev, copied: true }));
+            setTimeout(() => setState((prev) => ({ ...prev, copied: false })), 2000);
         } catch (error) {
             console.error('Error copying to clipboard:', error);
         }
@@ -69,11 +72,15 @@ export const CreateSessionModal = ({
     };
 
     const handleClose = () => {
-        setSessionCode(null);
-        setTitle(`${game.title} - Public Session`);
-        setDurationHours(24);
-        setMaxAttempts(undefined);
-        setCopied(false);
+        setState({
+            title: `${game.title} - Public Session`,
+            durationHours: 24,
+            maxAttempts: undefined,
+            isCreating: false,
+            sessionCode: null,
+            copied: false,
+            errorModal: { isOpen: false, message: '' }
+        });
         onClose();
     };
 
@@ -114,7 +121,7 @@ export const CreateSessionModal = ({
                                 id="title"
                                 type="text"
                                 value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                onChange={(e) => setState((prev) => ({ ...prev, title: e.target.value }))}
                                 className="input w-full"
                                 placeholder="Ex: Vocabulary Challenge"
                             />
@@ -128,7 +135,7 @@ export const CreateSessionModal = ({
                             <select
                                 id="duration"
                                 value={durationHours}
-                                onChange={(e) => setDurationHours(Number(e.target.value))}
+                                onChange={(e) => setState((prev) => ({ ...prev, durationHours: Number(e.target.value) }))}
                                 className="input w-full"
                             >
                                 <option value={1}>1 hour</option>
@@ -147,7 +154,7 @@ export const CreateSessionModal = ({
                             <select
                                 id="maxAttempts"
                                 value={maxAttempts || ''}
-                                onChange={(e) => setMaxAttempts(e.target.value ? Number(e.target.value) : undefined)}
+                                onChange={(e) => setState((prev) => ({ ...prev, maxAttempts: e.target.value ? Number(e.target.value) : undefined }))}
                                 className="input w-full"
                             >
                                 <option value="">Unlimited</option>
@@ -206,11 +213,12 @@ export const CreateSessionModal = ({
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-200">
+                            <label htmlFor="sessionShareUrl" className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-200">
                                 Share Link
                             </label>
                             <div className="flex gap-2">
                                 <input
+                                    id="sessionShareUrl"
                                     type="text"
                                     value={getSessionUrl()}
                                     readOnly
@@ -263,8 +271,8 @@ export const CreateSessionModal = ({
 
             <ConfirmationModal
                 isOpen={errorModal.isOpen}
-                onClose={() => setErrorModal({ ...errorModal, isOpen: false })}
-                onConfirm={() => setErrorModal({ ...errorModal, isOpen: false })}
+                onClose={() => setState((prev) => ({ ...prev, errorModal: { ...prev.errorModal, isOpen: false } }))}
+                onConfirm={() => setState((prev) => ({ ...prev, errorModal: { ...prev.errorModal, isOpen: false } }))}
                 title="Error"
                 message={errorModal.message}
                 confirmText="Got it"

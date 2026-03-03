@@ -147,8 +147,9 @@ export const FlashCardGame = ({
                     </div>
                 </div>
 
-                <div
-                    className="bg-white dark:bg-gray-800 rounded-3xl min-h-[400px] flex flex-col justify-center items-center cursor-pointer mb-8 relative shadow-xl border border-gray-200 dark:border-gray-700 group overflow-hidden"
+                <button
+                    type="button"
+                    className="w-full bg-white dark:bg-gray-800 rounded-3xl min-h-[400px] flex flex-col justify-center items-center cursor-pointer mb-8 relative shadow-xl border border-gray-200 dark:border-gray-700 group overflow-hidden"
                     onClick={handleFlip}
                 >
                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-secondary to-primary"></div>
@@ -181,7 +182,7 @@ export const FlashCardGame = ({
                             <Check size={16} /> VIEWED
                         </div>
                     )}
-                </div>
+                </button>
 
                 {/* Finish Button */}
                 {viewedCards.size === cards.length && !completed && (

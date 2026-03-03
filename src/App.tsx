@@ -54,8 +54,8 @@ function App() {
                       <Route path="game/:id" element={<GamePage />} />
                       <Route path="sessions" element={<TeacherRoute><SessionsPage /></TeacherRoute>} />
                       <Route path="MyGames" element={<StudentGameHistory />} />
-                      <Route path="admin" element={<AdminPage />} />
-                      <Route path="admin/edit/:id" element={<AdminPage />} />
+                      <Route path="admin" element={<TeacherRoute><AdminPage /></TeacherRoute>} />
+                      <Route path="admin/edit/:id" element={<TeacherRoute><AdminPage /></TeacherRoute>} />
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace />} />

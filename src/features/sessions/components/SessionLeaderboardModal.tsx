@@ -10,39 +10,44 @@ interface SessionLeaderboardModalProps {
 }
 
 export const SessionLeaderboardModal = ({ dbId, code, isOpen, onClose }: SessionLeaderboardModalProps) => {
-    const [scores, setScores] = useState<SessionScore[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [leaderboardState, setLeaderboardState] = useState<{
+        scores: SessionScore[];
+        loading: boolean;
+    }>({
+        scores: [],
+        loading: true
+    });
+    const { scores, loading } = leaderboardState;
 
     useEffect(() => {
         if (!isOpen) return;
 
         const fetchScores = async () => {
-            setLoading(true);
             const data = await sessionService.getLeaderboard(code);
-            setScores(data);
-            setLoading(false);
+            setLeaderboardState({ scores: data, loading: false });
         };
 
         fetchScores();
 
         // Subscribe to real-time updates using the UUID
         const unsubscribe = sessionService.subscribeToLeaderboard(dbId, (newScore) => {
-            setScores(prev => {
+            setLeaderboardState((prevState) => {
                 // Check if score already exists (update) or is new
-                const index = prev.findIndex(s => s.id === newScore.id);
+                const index = prevState.scores.findIndex(s => s.id === newScore.id);
                 let newScores;
                 if (index >= 0) {
-                    newScores = [...prev];
+                    newScores = [...prevState.scores];
                     newScores[index] = newScore;
                 } else {
-                    newScores = [...prev, newScore];
+                    newScores = [...prevState.scores, newScore];
                 }
 
                 // Re-sort
-                return newScores.sort((a, b) => {
+                const sortedScores = newScores.sort((a, b) => {
                     if (a.score !== b.score) return b.score - a.score;
                     return (a.time_taken || 0) - (b.time_taken || 0);
                 });
+                return { ...prevState, scores: sortedScores };
             });
         });
 

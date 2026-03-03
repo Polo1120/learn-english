@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useReducer, useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useContent } from '../context/ContentContext';
 import { FlashCardGame } from '../features/games/components/FlashCardGame';
@@ -23,9 +23,22 @@ export const GamePage = () => {
     const { games } = useContent();
     const gameFromContext = games.find((g) => g.id === id);
 
-    const [fetchedGame, setFetchedGame] = useState<Game | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [gameFetchState, dispatchGameFetch] = useReducer((state: {
+        fetchedGame: Game | null;
+        loading: boolean;
+    }, action: {
+        type: 'start' | 'success' | 'error';
+        payload?: Game | null;
+    }) => {
+        if (action.type === 'start') return { ...state, loading: true };
+        if (action.type === 'success') return { fetchedGame: action.payload ?? null, loading: false };
+        return { ...state, loading: false };
+    }, {
+        fetchedGame: null,
+        loading: false
+    });
     const [completingAssignment, setCompletingAssignment] = useState(false);
+    const { fetchedGame, loading } = gameFetchState;
 
     const game = gameFromContext || fetchedGame;
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,18 +48,18 @@ export const GamePage = () => {
     useEffect(() => {
         const fetchGame = async () => {
             if (!gameFromContext && id) {
-                setLoading(true);
+                dispatchGameFetch({ type: 'start' });
                 try {
                     const data = await gamesService.getOne(id);
                     if (data) {
-                        setFetchedGame(data);
+                        dispatchGameFetch({ type: 'success', payload: data });
                     } else {
                         console.error('Game not found');
+                        dispatchGameFetch({ type: 'error' });
                     }
                 } catch (err) {
                     console.error('Error fetching game:', err);
-                } finally {
-                    setLoading(false);
+                    dispatchGameFetch({ type: 'error' });
                 }
             }
         };
@@ -124,6 +137,7 @@ export const GamePage = () => {
             <>
                 <QuizGame
                     questions={game.content.questions}
+                    showOptionLabels={game.content.quizOptionDisplayMode === 'with_labels'}
                     onGameComplete={assignmentId ? handleAssignmentComplete : undefined}
                     onShare={profile?.role === 'teacher' ? () => setIsModalOpen(true) : undefined}
                     onExit={() => window.history.back()}

@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { Trophy, Clock, Medal } from 'lucide-react';
 import type { SessionScore } from '../../../shared/types';
 
@@ -9,11 +8,7 @@ interface LeaderboardProps {
 }
 
 export const Leaderboard = ({ scores, currentNickname, isRealtime = false }: LeaderboardProps) => {
-    const [animatedScores, setAnimatedScores] = useState<SessionScore[]>(scores);
-
-    useEffect(() => {
-        setAnimatedScores(scores);
-    }, [scores]);
+    const animatedScores = scores;
 
     const formatTime = (seconds?: number) => {
         if (!seconds) return '-';

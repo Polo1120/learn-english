@@ -44,16 +44,23 @@ export const WordImageGame = ({ words, onGameComplete, onShare, onAssign, isSubm
         return () => clearInterval(interval);
     }, [gameStatus]);
 
-    useEffect(() => {
+    const resetRoundState = () => {
         setGuessedLetters([]);
         setWrongGuesses(0);
         setGameStatus('playing');
-    }, [currentIndex]);
+    };
 
     const currentWordObj = words[currentIndex];
     const wordToGuess = currentWordObj.word.toUpperCase();
     const maxWrongGuesses = 6;
     const livesRemaining = Math.max(0, maxWrongGuesses - wrongGuesses);
+    const lifeSlots = [1, 2, 3, 4, 5, 6];
+    const repeatedCharCounter: Record<string, number> = {};
+    const letterCells = wordToGuess.split('').map((char) => {
+        const count = (repeatedCharCounter[char] ?? 0) + 1;
+        repeatedCharCounter[char] = count;
+        return { char, key: `${char}-${count}` };
+    });
 
     const handleGuess = (letter: string) => {
         if (gameStatus !== 'playing' || guessedLetters.includes(letter)) return;
@@ -72,14 +79,15 @@ export const WordImageGame = ({ words, onGameComplete, onShare, onAssign, isSubm
             );
             if (isWordComplete) {
                 setGameStatus('won');
-                setScore(score + 10);
+                setScore((prev) => prev + 10);
             }
         }
     };
 
     const handleNextWord = () => {
         if (currentIndex < words.length - 1) {
-            setCurrentIndex(currentIndex + 1);
+            resetRoundState();
+            setCurrentIndex((prev) => prev + 1);
         } else {
             setShowScore(true);
             if (onGameComplete) {
@@ -124,9 +132,7 @@ export const WordImageGame = ({ words, onGameComplete, onShare, onAssign, isSubm
                             <button
                                 onClick={() => {
                                     setCurrentIndex(0);
-                                    setGuessedLetters([]);
-                                    setWrongGuesses(0);
-                                    setGameStatus('playing');
+                                    resetRoundState();
                                     setScore(0);
                                     setShowScore(false);
                                     setElapsedTime(0);
@@ -181,12 +187,12 @@ export const WordImageGame = ({ words, onGameComplete, onShare, onAssign, isSubm
                                 <Zap className="size-3 sm:size-4 text-primary" /> Attempts
                             </span>
                             <div className="flex gap-1 sm:gap-1.5">
-                                {[...Array(maxWrongGuesses)].map((_, i) => (
+                                {lifeSlots.map((slot) => (
                                     <div
-                                        key={i}
+                                        key={slot}
                                         className={cn(
                                             "w-4 sm:w-6 h-6 sm:h-8 rounded-sm sm:rounded-md transition-all duration-500",
-                                            i < livesRemaining
+                                            slot <= livesRemaining
                                                 ? "bg-gradient-to-t from-primary to-indigo-400 shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]"
                                                 : "bg-slate-200 dark:bg-gray-800 opacity-40 grayscale"
                                         )}
@@ -228,8 +234,8 @@ export const WordImageGame = ({ words, onGameComplete, onShare, onAssign, isSubm
                             <div className="w-full">
                                 <p className="text-center text-slate-400 dark:text-gray-500 text-[10px] sm:text-xs font-black mb-4 sm:mb-8 uppercase tracking-[0.3em]">Decode the Word</p>
                                 <div className="flex flex-wrap justify-center gap-2 sm:gap-3 select-none">
-                                    {wordToGuess.split('').map((char: string, index: number) => (
-                                        <div key={index} className="flex flex-col items-center">
+                                    {letterCells.map(({ char, key }) => (
+                                        <div key={key} className="flex flex-col items-center">
                                             <span className={cn(
                                                 "w-8 sm:w-12 h-10 sm:h-16 flex items-center justify-center text-2xl sm:text-5xl font-black border-b-2 sm:border-b-4 transition-all duration-300",
                                                 guessedLetters.includes(char) || char === ' ' || gameStatus !== 'playing'

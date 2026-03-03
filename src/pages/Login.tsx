@@ -91,7 +91,7 @@ export const Login = () => {
                     <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-center ml-1">
                             <label className="text-sm font-semibold text-slate-700 dark:text-slate-300" htmlFor="password">Password</label>
-                            <a className="text-xs text-secondary hover:text-accent-purple font-medium transition-colors" href="#">Forgot Password?</a>
+                            <a className="text-xs text-secondary hover:text-accent-purple font-medium transition-colors" href="/forgot-password">Forgot Password?</a>
                         </div>
                         <div className="group relative flex items-center">
                             <input

@@ -13,32 +13,49 @@ interface AssignGameModalProps {
 }
 
 export const AssignGameModal = ({ isOpen, onClose, gameId, gameTitle }: AssignGameModalProps) => {
+    if (!isOpen) return null;
+
+    return <AssignGameModalContent onClose={onClose} gameId={gameId} gameTitle={gameTitle} />;
+};
+
+interface AssignGameModalContentProps {
+    onClose: () => void;
+    gameId: string;
+    gameTitle: string;
+}
+
+const AssignGameModalContent = ({ onClose, gameId, gameTitle }: AssignGameModalContentProps) => {
     const { user } = useAuth();
-    const [students, setStudents] = useState<Profile[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [assigning, setAssigning] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
-    const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+    const [state, setState] = useState<{
+        students: Profile[];
+        loading: boolean;
+        assigning: boolean;
+        searchTerm: string;
+        selectedStudent: string | null;
+        feedback: { type: 'success' | 'error', message: string } | null;
+    }>({
+        students: [],
+        loading: true,
+        assigning: false,
+        searchTerm: '',
+        selectedStudent: null,
+        feedback: null
+    });
+    const { students, loading, assigning, searchTerm, selectedStudent, feedback } = state;
 
     useEffect(() => {
-        if (isOpen) {
-            fetchStudents();
-            setFeedback(null);
-            setSelectedStudent(null);
-            setSearchTerm('');
-        }
-    }, [isOpen]);
+        fetchStudents();
+    }, []);
 
     const fetchStudents = async () => {
         try {
-            setLoading(true);
+            setState((prev) => ({ ...prev, loading: true }));
             const data = await profileService.getStudents();
-            setStudents(data);
+            setState((prev) => ({ ...prev, students: data }));
         } catch (error) {
             console.error('Error fetching students:', error);
         } finally {
-            setLoading(false);
+            setState((prev) => ({ ...prev, loading: false }));
         }
     };
 
@@ -46,21 +63,21 @@ export const AssignGameModal = ({ isOpen, onClose, gameId, gameTitle }: AssignGa
         if (!selectedStudent || !user) return;
 
         try {
-            setAssigning(true);
+            setState((prev) => ({ ...prev, assigning: true }));
             await assignmentService.assignGame({
                 student_id: selectedStudent,
                 game_id: gameId,
                 teacher_id: user.id
             });
-            setFeedback({ type: 'success', message: 'Game assigned successfully!' });
+            setState((prev) => ({ ...prev, feedback: { type: 'success', message: 'Game assigned successfully!' } }));
             setTimeout(() => {
                 onClose();
             }, 1500);
         } catch (error) {
             console.error('Error assigning game:', error);
-            setFeedback({ type: 'error', message: 'Failed to assign game. It might already be assigned.' });
+            setState((prev) => ({ ...prev, feedback: { type: 'error', message: 'Failed to assign game. It might already be assigned.' } }));
         } finally {
-            setAssigning(false);
+            setState((prev) => ({ ...prev, assigning: false }));
         }
     };
 
@@ -68,8 +85,6 @@ export const AssignGameModal = ({ isOpen, onClose, gameId, gameTitle }: AssignGa
         student.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -92,7 +107,7 @@ export const AssignGameModal = ({ isOpen, onClose, gameId, gameTitle }: AssignGa
                             type="text"
                             placeholder="Search students..."
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => setState((prev) => ({ ...prev, searchTerm: e.target.value }))}
                             className="input pl-10 w-full"
                         />
                     </div>
@@ -106,7 +121,7 @@ export const AssignGameModal = ({ isOpen, onClose, gameId, gameTitle }: AssignGa
                             filteredStudents.map(student => (
                                 <button
                                     key={student.id}
-                                    onClick={() => setSelectedStudent(student.id)}
+                                    onClick={() => setState((prev) => ({ ...prev, selectedStudent: student.id }))}
                                     className={`w-full flex items-center p-3 rounded-xl transition-all ${selectedStudent === student.id
                                         ? 'bg-primary/10 border-primary border'
                                         : 'bg-slate-50 dark:bg-white/5 border border-transparent hover:bg-slate-100 dark:hover:bg-white/10'

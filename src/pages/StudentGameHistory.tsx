@@ -6,21 +6,26 @@ import type { GameHistory } from '../shared/types';
 
 export const StudentGameHistory = () => {
     const { profile } = useAuth();
-    const [history, setHistory] = useState<GameHistory[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [viewState, setViewState] = useState<{
+        history: GameHistory[];
+        loading: boolean;
+        error: string | null;
+    }>({
+        history: [],
+        loading: true,
+        error: null
+    });
+    const { history, loading, error } = viewState;
 
     useEffect(() => {
         const fetchHistory = async () => {
             if (!profile?.id) return;
             try {
                 const historyData = await gameHistoryService.getStudentHistory(profile.id);
-                setHistory(historyData);
+                setViewState({ history: historyData, loading: false, error: null });
             } catch (err) {
                 console.error("Failed to fetch history", err);
-                setError("Could not load your game history.");
-            } finally {
-                setLoading(false);
+                setViewState({ history: [], loading: false, error: "Could not load your game history." });
             }
         };
 

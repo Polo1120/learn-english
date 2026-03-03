@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useReducer } from 'react';
 import type { ReactNode } from 'react';
 import type { User, LoginCredentials, Profile } from '../shared/types';
 import { authService } from '../features/auth/services/authService';
@@ -15,6 +15,27 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+type AuthState = {
+    user: User | null;
+    profile: Profile | null;
+    loading: boolean;
+};
+
+type AuthAction =
+    | { type: 'init'; user: User | null; profile: Profile | null }
+    | { type: 'setAuth'; user: User | null; profile: Profile | null }
+    | { type: 'logout' };
+
+const authReducer = (state: AuthState, action: AuthAction): AuthState => {
+    if (action.type === 'init') {
+        return { user: action.user, profile: action.profile, loading: false };
+    }
+    if (action.type === 'setAuth') {
+        return { ...state, user: action.user, profile: action.profile };
+    }
+    return { ...state, user: null, profile: null };
+};
+
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
@@ -24,11 +45,14 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [profile, setProfile] = useState<Profile | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [authState, dispatchAuth] = useReducer(authReducer, {
+        user: null,
+        profile: null,
+        loading: true
+    });
+    const { user, profile, loading } = authState;
 
-    const fetchProfile = async (userId: string, userEmail: string, userMeta: any) => {
+    const fetchProfile = async (userId: string, userEmail: string, userMeta: any): Promise<Profile | null> => {
         try {
             const { data, error } = await supabase
                 .from('profiles')
@@ -52,16 +76,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                         .single();
 
                     if (createError) throw createError;
-                    setProfile(created as Profile);
+                    return created as Profile;
                 } else {
                     console.error('Error fetching profile:', error);
+                    return null;
                 }
             } else {
-                setProfile(data as Profile);
+                return data as Profile;
             }
         } catch (err) {
             console.error('Profile fetch error:', err);
+            return null;
         }
+        return null;
     };
 
     useEffect(() => {
@@ -69,24 +96,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             try {
                 const currentUser = await authService.getCurrentUser();
                 if (currentUser) {
-                    setUser(currentUser);
-                    await fetchProfile(currentUser.id, currentUser.email!, currentUser.user_metadata);
+                    const currentProfile = await fetchProfile(currentUser.id, currentUser.email!, currentUser.user_metadata);
+                    dispatchAuth({ type: 'init', user: currentUser, profile: currentProfile });
+                } else {
+                    dispatchAuth({ type: 'init', user: null, profile: null });
                 }
             } catch (error) {
                 console.error('Auth initialization error:', error);
-            } finally {
-                setLoading(false);
+                dispatchAuth({ type: 'init', user: null, profile: null });
             }
         };
 
         initAuth();
 
         const unsubscribe = authService.onAuthChange(async (newUser) => {
-            setUser(newUser);
             if (newUser) {
-                await fetchProfile(newUser.id, newUser.email!, newUser.user_metadata);
+                const newProfile = await fetchProfile(newUser.id, newUser.email!, newUser.user_metadata);
+                dispatchAuth({ type: 'setAuth', user: newUser, profile: newProfile });
             } else {
-                setProfile(null);
+                dispatchAuth({ type: 'setAuth', user: null, profile: null });
             }
         });
 
@@ -96,9 +124,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const login = async (credentials: LoginCredentials) => {
         try {
             const user = await authService.login(credentials);
-            setUser(user);
             if (user) {
-                await fetchProfile(user.id, user.email!, user.user_metadata);
+                const userProfile = await fetchProfile(user.id, user.email!, user.user_metadata);
+                dispatchAuth({ type: 'setAuth', user, profile: userProfile });
             }
         } catch (error) {
             throw error;
@@ -107,8 +135,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const logout = async () => {
         await authService.logout();
-        setUser(null);
-        setProfile(null);
+        dispatchAuth({ type: 'logout' });
     };
 
     const value = {

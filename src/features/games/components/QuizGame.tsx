@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { cn } from '../../../shared/lib/utils';
 import { GameHeader } from './GameHeader';
 import { useNavigate } from 'react-router-dom';
@@ -12,9 +12,10 @@ interface QuizGameProps {
     onExit?: () => void;
     onAssign?: () => void;
     isSubmitting?: boolean;
+    showOptionLabels?: boolean;
 }
 
-export const QuizGame = ({ questions, onGameComplete, onShare, onAssign, isSubmitting, onExit }: QuizGameProps) => {
+export const QuizGame = ({ questions, onGameComplete, onShare, onAssign, isSubmitting, onExit, showOptionLabels = false }: QuizGameProps) => {
     const navigate = useNavigate();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [score, setScore] = useState(0);
@@ -52,16 +53,80 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign, isSubmi
         }
     };
 
-    const handleAnswerClick = (index: number) => {
+    const getCorrectAnswerIndex = (question: Question) => {
+        const raw = question.correctAnswer as unknown;
+        const optionsLength = question.options.length;
+        const normalizeOptionText = (value: string) =>
+            value
+                .trim()
+                .toLowerCase()
+                .replace(/^([a-z]|\d+)\s*[)\].:-]\s*/, '');
+
+        if (typeof raw === 'number' && raw >= 0 && raw < optionsLength) {
+            return raw;
+        }
+
+        if (typeof raw === 'string') {
+            const value = raw.trim().toLowerCase();
+
+            if (/^\d+$/.test(value)) {
+                const parsed = Number(value);
+                if (parsed >= 0 && parsed < optionsLength) return parsed;
+                if (parsed >= 1 && parsed <= optionsLength) return parsed - 1;
+            }
+
+            if (/^[a-z]$/.test(value)) {
+                const letterIndex = value.charCodeAt(0) - 97;
+                if (letterIndex >= 0 && letterIndex < optionsLength) {
+                    return letterIndex;
+                }
+            }
+
+            const normalizedValue = normalizeOptionText(value);
+            const optionIndex = question.options.findIndex((option) => {
+                const optionValue = option.trim().toLowerCase();
+                return optionValue === value || normalizeOptionText(optionValue) === normalizedValue;
+            });
+            if (optionIndex !== -1) {
+                return optionIndex;
+            }
+        }
+
+        return -1;
+    };
+
+    const currentQuestion = questions[currentIndex];
+    const currentCorrectAnswerIndex = getCorrectAnswerIndex(currentQuestion);
+
+    const handleAnswerClick = useCallback((index: number) => {
         if (isAnswered) return;
 
         setSelectedAnswer(index);
         setIsAnswered(true);
 
-        if (index === questions[currentIndex].correctAnswer) {
-            setScore(score + 1);
+        if (index === currentCorrectAnswerIndex) {
+            setScore((prev) => prev + 1);
         }
-    };
+    }, [isAnswered, currentCorrectAnswerIndex]);
+
+    useEffect(() => {
+        if (isAnswered || showScore) return;
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            const pressedKey = event.key.toLowerCase();
+            const optionIndex = ['a', 'b', 'c', 'd'].indexOf(pressedKey);
+
+            if (optionIndex === -1 || optionIndex >= currentQuestion.options.length) {
+                return;
+            }
+
+            event.preventDefault();
+            handleAnswerClick(optionIndex);
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isAnswered, showScore, currentQuestion.options.length, handleAnswerClick]);
 
     const handleNextQuestion = () => {
         const nextQuestion = currentIndex + 1;
@@ -90,9 +155,7 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign, isSubmi
 
     const progressPercentage = ((currentIndex + 1) / questions.length) * 100;
 
-
     const getOptionLetter = (index: number) => String.fromCharCode(65 + index);
-
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
@@ -138,8 +201,6 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign, isSubmi
             </div>
         );
     }
-
-    const currentQuestion = questions[currentIndex];
 
     return (
         <div className="font-display bg-background-light dark:bg-background-dark text-[#111318] dark:text-white min-h-screen flex flex-col">
@@ -199,14 +260,14 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign, isSubmi
 
                         <div className="grid grid-cols-1 gap-4 sm:gap-6">
                             {currentQuestion.options.map((option, index) => {
-                                const isCorrect = index === currentQuestion.correctAnswer;
+                                const isCorrect = index === currentCorrectAnswerIndex;
                                 const isSelected = selectedAnswer === index;
                                 const isWrong = isSelected && !isCorrect;
                                 const isHighlighted = isAnswered && (isCorrect || isWrong);
 
                                 return (
                                     <button
-                                        key={index}
+                                        key={`${currentIndex}-${index}-${option}`}
                                         onClick={() => handleAnswerClick(index)}
                                         disabled={isAnswered}
                                         className={cn(
@@ -230,7 +291,11 @@ export const QuizGame = ({ questions, onGameComplete, onShare, onAssign, isSubmi
                                             // Highlighted (Correct or Wrong)
                                             isHighlighted && "bg-white/20 text-white"
                                         )}>
-                                            {getOptionLetter(index)}
+                                            {showOptionLabels ? (
+                                                getOptionLetter(index)
+                                            ) : (
+                                                <span className="material-symbols-outlined text-xl">radio_button_unchecked</span>
+                                            )}
                                         </div>
                                         <span className={cn(
                                             "text-left text-lg font-bold leading-snug flex-1",

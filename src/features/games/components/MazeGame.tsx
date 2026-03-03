@@ -271,7 +271,7 @@ export const MazeGame = ({ questions, onGameComplete, onShare, onAssign, onExit 
                             </div>
                             <div className="grid grid-cols-1 gap-3 mt-8">
                                 {currentQuestion.options.map((option, idx) => (
-                                    <div key={idx} className="p-4 rounded-xl border flex items-center gap-4 transition-all bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700">
+                                    <div key={`${currentIndex}-${String.fromCharCode(65 + idx)}-${option}`} className="p-4 rounded-xl border flex items-center gap-4 transition-all bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700">
                                         <div className="size-8 rounded-lg bg-slate-100 dark:bg-gray-800 flex items-center justify-center font-black text-slate-400">{String.fromCharCode(65 + idx)}</div>
                                         <span className="font-bold text-slate-700 dark:text-gray-300">{option}</span>
                                     </div>

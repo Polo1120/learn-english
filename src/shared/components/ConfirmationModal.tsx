@@ -1,5 +1,4 @@
 import { X, AlertTriangle, CheckCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 interface ConfirmationModalProps {
     isOpen: boolean;
@@ -22,18 +21,7 @@ export const ConfirmationModal = ({
     cancelText = 'Cancel',
     variant = 'primary',
 }: ConfirmationModalProps) => {
-    const [show, setShow] = useState(false);
-
-    useEffect(() => {
-        if (isOpen) {
-            setShow(true);
-        } else {
-            const timer = setTimeout(() => setShow(false), 300);
-            return () => clearTimeout(timer);
-        }
-    }, [isOpen]);
-
-    if (!show && !isOpen) return null;
+    if (!isOpen) return null;
 
     const getIcon = () => {
         if (variant === 'danger') return <AlertTriangle className="text-red-500" size={32} />;
@@ -48,15 +36,17 @@ export const ConfirmationModal = ({
     };
 
     return (
-        <div className={`fixed inset-0 z-[99999] flex items-center justify-center p-4 transition-all duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 transition-all duration-300 opacity-100 pointer-events-auto">
             {/* Backdrop */}
-            <div
+            <button
+                type="button"
+                aria-label="Close confirmation modal"
                 className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
                 onClick={onClose}
-            ></div>
+            />
 
             {/* Modal Content */}
-            <div className={`glass-card bg-white dark:bg-card-bg w-full max-w-sm rounded-2xl shadow-2xl relative z-10 p-6 transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}>
+            <div className="glass-card bg-white dark:bg-card-bg w-full max-w-sm rounded-2xl shadow-2xl relative z-10 p-6 transform transition-all duration-300 scale-100 translate-y-0">
                 {/* Close Button */}
                 <button
                     onClick={onClose}

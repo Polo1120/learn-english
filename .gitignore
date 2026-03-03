@@ -16,7 +16,8 @@ sketch
 
 .vscode
 .env
-.env.example
 supabase_game_history.sql
 supabase_assignments.sql
-
+supabase_games.sql
+supabase_profiles.sql
+.agents

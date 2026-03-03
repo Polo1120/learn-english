@@ -5,6 +5,7 @@ import { ConfirmationModal } from '../shared/components/ConfirmationModal';
 import { NicknameEntry } from '../features/sessions/components/NicknameEntry';
 import { QuizGame } from '../features/games/components/QuizGame';
 import { WordImageGame } from '../features/games/components/WordImageGame';
+import { MazeGame } from '../features/games/components/MazeGame';
 import { useGameSession } from '../features/sessions/hooks/useGameSession';
 import { Leaderboard } from '../features/sessions/components/Leaderboard';
 import { CelebrationCard } from '../features/sessions/components/CelebrationCard';
@@ -78,6 +79,7 @@ export const PublicGameSession = () => {
     // GAMEPLAY STATE
     const isQuiz = game?.type === 'quiz';
     const isWordImage = game?.type === 'word_image';
+    const isMazeGame = game?.type === 'maze_game';
     const bestScore = Math.max(...scores.map(s => s.score), 0);
 
     return (
@@ -105,6 +107,7 @@ export const PublicGameSession = () => {
                         {isQuiz && game.content.questions && (
                             <QuizGame
                                 questions={game.content.questions}
+                                showOptionLabels={game.content.quizOptionDisplayMode === 'with_labels'}
                                 onGameComplete={handleGameComplete}
                                 isSubmitting={submittingScore}
                             />
@@ -116,7 +119,13 @@ export const PublicGameSession = () => {
                                 isSubmitting={submittingScore}
                             />
                         )}
-                        {!isQuiz && !isWordImage && (
+                        {isMazeGame && game.content.questions && (
+                            <MazeGame
+                                questions={game.content.questions}
+                                onGameComplete={handleGameComplete}
+                            />
+                        )}
+                        {!isQuiz && !isWordImage && !isMazeGame && (
                             <div className="glass-panel text-slate-900 dark:text-gray-400 p-8 text-center bg-white/50 dark:bg-white/5">
                                 Game type not supported in this view.
                             </div>
@@ -129,7 +138,7 @@ export const PublicGameSession = () => {
                 </div>
             </main>
 
-            {/* Alert Modal */}
+            
             <ConfirmationModal
                 isOpen={alertModal.isOpen}
                 onClose={closeAlertModal}

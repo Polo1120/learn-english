@@ -94,7 +94,6 @@ export const NicknameEntry = ({ onSubmit, sessionTitle }: NicknameEntryProps) =>
                                 placeholder="Ex: EagleEye, FastLearner..."
                                 className="w-full pl-11 pr-4 py-3 bg-[rgba(241,245,249,0.5)] dark:bg-white/5 border border-[rgba(148,163,184,0.4)] dark:border-white/10 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-text-main dark:text-white placeholder-slate-400 dark:placeholder-gray-500"
                                 maxLength={20}
-                                autoFocus
                             />
                         </div>
                         <div className="flex justify-between mt-2">

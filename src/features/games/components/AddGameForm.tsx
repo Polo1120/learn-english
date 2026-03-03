@@ -1,11 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
 import { useContent } from '../../../context/ContentContext';
 import { gamesService } from '../services/gamesService';
-import type { GameType, Flashcard, Question, WordGuess } from '../../../shared/types';
+import type { GameType, Flashcard, Question, WordGuess, QuizOptionDisplayMode, Game } from '../../../shared/types';
 import { Plus, Trash2, Save, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../../../shared/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { ConfirmationModal } from '../../../shared/components/ConfirmationModal';
+
+type EditableFlashcard = Omit<Flashcard, 'id'> & { _key: string };
+type EditableWordGuess = Omit<WordGuess, 'id'> & { _key: string };
+
+const makeDraftKey = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+const createDraftFlashcard = (card?: Omit<Flashcard, 'id'>): EditableFlashcard => ({
+    _key: makeDraftKey(),
+    front: card?.front ?? '',
+    back: card?.back ?? '',
+    imageUrl: card?.imageUrl ?? ''
+});
+const createDraftWord = (word?: Omit<WordGuess, 'id'>): EditableWordGuess => ({
+    _key: makeDraftKey(),
+    word: word?.word ?? '',
+    hint: word?.hint ?? '',
+    imageUrl: word?.imageUrl ?? ''
+});
 
 export const AddGameForm = ({ gameId }: { gameId?: string }) => {
     const { addGame, updateGame } = useContent();
@@ -28,11 +45,12 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
         shouldRedirect: false
     });
 
-    const [cards, setCards] = useState<Omit<Flashcard, 'id'>[]>([{ front: '', back: '', imageUrl: '' }]);
+    const [cards, setCards] = useState<EditableFlashcard[]>([createDraftFlashcard()]);
     const [questions, setQuestions] = useState<Omit<Question, 'id'>[]>([
         { text: '', options: ['', '', '', ''], correctAnswer: 0 }
     ]);
-    const [words, setWords] = useState<Omit<WordGuess, 'id'>[]>([{ word: '', hint: '', imageUrl: '' }]);
+    const [quizOptionDisplayMode, setQuizOptionDisplayMode] = useState<QuizOptionDisplayMode>('without_labels');
+    const [words, setWords] = useState<EditableWordGuess[]>([createDraftWord()]);
 
     const [loading, setLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,11 +72,14 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
                 setType(game.type);
 
                 if (game.type === 'flashcard' && game.content.cards) {
-                    setCards(game.content.cards);
+                    setCards(game.content.cards.map((card) => createDraftFlashcard(card)));
                 } else if ((game.type === 'quiz' || game.type === 'maze_game') && game.content.questions) {
                     setQuestions(game.content.questions);
+                    if (game.type === 'quiz') {
+                        setQuizOptionDisplayMode(game.content.quizOptionDisplayMode ?? 'without_labels');
+                    }
                 } else if (game.type === 'word_image') {
-                    if (game.content.words) setWords(game.content.words);
+                    if (game.content.words) setWords(game.content.words.map((word) => createDraftWord(word)));
                 }
             }
         } catch (error) {
@@ -69,7 +90,7 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
     };
 
     const handleAddCard = () => {
-        setCards([...cards, { front: '', back: '', imageUrl: '' }]);
+        setCards([...cards, createDraftFlashcard()]);
     };
 
     const handleRemoveCard = (index: number) => {
@@ -90,12 +111,12 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
         setQuestions(questions.filter((_, i) => i !== index));
     };
 
-    const handleQuestionChange = (index: number, field: string, value: any) => {
+    const handleQuestionChange = (index: number, field: 'text' | 'correctAnswer', value: string | number) => {
         const newQuestions = [...questions];
         if (field === 'text') {
-            newQuestions[index].text = value;
+            newQuestions[index].text = String(value);
         } else if (field === 'correctAnswer') {
-            newQuestions[index].correctAnswer = parseInt(value);
+            newQuestions[index].correctAnswer = Number(value);
         }
         setQuestions(newQuestions);
     };
@@ -107,7 +128,7 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
     };
 
     const handleAddWord = () => {
-        setWords([...words, { word: '', hint: '', imageUrl: '' }]);
+        setWords([...words, createDraftWord()]);
     };
 
     const handleRemoveWord = (index: number) => {
@@ -153,23 +174,37 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
 
         isSubmittingRef.current = true;
         setIsSubmitting(true);
-        console.log('Starting game submission...');
+       
 
-        const gameData = {
+        const gameData: Omit<Game, 'id'> = {
             title,
             description,
             type,
             content: type === 'flashcard'
-                ? { cards: cards }
+                ? {
+                    cards: cards.map((card) => ({
+                        front: card.front,
+                        back: card.back,
+                        imageUrl: card.imageUrl
+                    }))
+                }
                 : (type === 'quiz' || type === 'maze_game')
-                    ? { questions: questions }
-                    : { words: words }
+                    ? {
+                        questions,
+                        ...(type === 'quiz' ? { quizOptionDisplayMode } : {})
+                    }
+                    : {
+                        words: words.map((word) => ({
+                            word: word.word,
+                            hint: word.hint,
+                            imageUrl: word.imageUrl
+                        }))
+                    }
         };
 
         try {
             if (gameId) {
-                console.log('Updating game:', gameId);
-                await updateGame(gameId, gameData as any);
+                await updateGame(gameId, gameData);
                 setFeedbackModal({
                     isOpen: true,
                     title: 'Success!',
@@ -178,8 +213,7 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
                     shouldRedirect: true
                 });
             } else {
-                console.log('Creating new game');
-                await addGame(gameData as any);
+                await addGame(gameData);
                 setFeedbackModal({
                     isOpen: true,
                     title: 'Success!',
@@ -188,7 +222,7 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
                     shouldRedirect: true
                 });
             }
-            // navigate('/'); // Moved to modal close
+           
         } catch (err) {
             console.error('Error saving game:', err);
             setFeedbackModal({
@@ -201,7 +235,6 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
         } finally {
             isSubmittingRef.current = false;
             setIsSubmitting(false);
-            console.log('Submission finished');
         }
     };
 
@@ -270,7 +303,7 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
             {type === 'flashcard' ? (
                 <div className="flex flex-col gap-8">
                     {cards.map((card, index) => (
-                        <div key={index} className="flex flex-col bg-slate-50 dark:bg-[#1A2230] p-6 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm space-y-4">
+                        <div key={card._key} className="flex flex-col bg-slate-50 dark:bg-[#1A2230] p-6 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm space-y-4">
                             <div className="flex justify-between items-center">
                                 <h4 className="font-bold text-slate-700 dark:text-slate-300">Flashcard {index + 1}</h4>
                                 <button
@@ -286,9 +319,10 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-4">
                                     <div className="form-group">
-                                        <label className="label text-sm">Front (English)</label>
+                                        <label className="label text-sm" htmlFor={`card-front-${card._key}`}>Front (English)</label>
                                         <input
                                             type="text"
+                                            id={`card-front-${card._key}`}
                                             value={card.front}
                                             onChange={(e) => handleCardChange(index, 'front', e.target.value)}
                                             className="input"
@@ -297,9 +331,10 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label className="label text-sm">Back (Translation)</label>
+                                        <label className="label text-sm" htmlFor={`card-back-${card._key}`}>Back (Translation)</label>
                                         <input
                                             type="text"
+                                            id={`card-back-${card._key}`}
                                             value={card.back}
                                             onChange={(e) => handleCardChange(index, 'back', e.target.value)}
                                             className="input"
@@ -347,6 +382,23 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
                 </div>
             ) : (type === 'quiz' || type === 'maze_game') ? (
                 <div className="flex flex-col gap-8">
+                    {type === 'quiz' && (
+                        <div className="form-group">
+                            <label className="label" htmlFor="quiz-option-display-mode">
+                                Display options
+                            </label>
+                            <select
+                                id="quiz-option-display-mode"
+                                name="quiz-option-display-mode"
+                                value={quizOptionDisplayMode}
+                                onChange={(e) => setQuizOptionDisplayMode(e.target.value as QuizOptionDisplayMode)}
+                                className="select"
+                            >
+                                <option value="without_labels">No letters</option>
+                                <option value="with_labels">With letters (A, B, C, D)</option>
+                            </select>
+                        </div>
+                    )}
                     {questions.map((q, qIndex) => (
                         <div key={qIndex} className="p-6 bg-slate-50 dark:bg-[#1A2230] rounded-xl relative">
                             <button
@@ -362,8 +414,8 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
                                 <label className="label" htmlFor="questionText">Question Text</label>
                                 <input
                                     type="text"
-                                    id="questionText"
-                                    name="questionText"
+                                    id={`questionText-${qIndex}`}
+                                    name={`questionText-${qIndex}`}
                                     value={q.text}
                                     onChange={(e) => handleQuestionChange(qIndex, 'text', e.target.value)}
                                     className="input"
@@ -374,7 +426,7 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {q.options.map((option, oIndex) => (
                                     <div key={oIndex}>
-                                        <label className="label  text-sm" htmlFor={`option-${oIndex}`}>Option {oIndex + 1}</label>
+                                        <label className="label  text-sm" htmlFor={`option-${qIndex}-${oIndex}`}>Option {oIndex + 1}</label>
                                         <div className="flex gap-2 items-center">
                                             <input
                                                 type="radio"
@@ -385,8 +437,8 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
                                             />
                                             <input
                                                 type="text"
-                                                id={`option-${oIndex}`}
-                                                name={`option-${oIndex}`}
+                                                id={`option-${qIndex}-${oIndex}`}
+                                                name={`option-${qIndex}-${oIndex}`}
                                                 value={option}
                                                 onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
                                                 className="input"
@@ -405,7 +457,7 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
             ) : (
                 <div className="grid grid-cols-1 gap-6">
                     {words.map((word, index) => (
-                        <div key={index} className="flex flex-col bg-slate-50 dark:bg-[#1A2230] p-6 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm space-y-4">
+                        <div key={word._key} className="flex flex-col bg-slate-50 dark:bg-[#1A2230] p-6 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm space-y-4">
                             <div className="flex justify-between items-center">
                                 <h4 className="font-bold text-slate-700 dark:text-slate-300">Word {index + 1}</h4>
                                 <button
@@ -421,9 +473,10 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-4">
                                     <div className="form-group">
-                                        <label className="label text-sm">Word (English)</label>
+                                        <label className="label text-sm" htmlFor={`word-${word._key}`}>Word (English)</label>
                                         <input
                                             type="text"
+                                            id={`word-${word._key}`}
                                             value={word.word}
                                             onChange={(e) => handleWordChange(index, 'word', e.target.value)}
                                             className="input"
@@ -432,9 +485,10 @@ export const AddGameForm = ({ gameId }: { gameId?: string }) => {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label className="label text-sm">Hint</label>
+                                        <label className="label text-sm" htmlFor={`hint-${word._key}`}>Hint</label>
                                         <input
                                             type="text"
+                                            id={`hint-${word._key}`}
                                             value={word.hint}
                                             onChange={(e) => handleWordChange(index, 'hint', e.target.value)}
                                             className="input"

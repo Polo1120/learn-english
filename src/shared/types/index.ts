@@ -1,5 +1,6 @@
 // Base types for game content
 export type GameType = 'flashcard' | 'quiz' | 'word_image' | 'maze_game';
+export type QuizOptionDisplayMode = 'with_labels' | 'without_labels';
 
 export interface Flashcard {
     id?: string;
@@ -26,6 +27,7 @@ export interface GameContent {
     cards?: Flashcard[];
     questions?: Question[];
     words?: WordGuess[];
+    quizOptionDisplayMode?: QuizOptionDisplayMode;
 }
 
 // Base Game interface

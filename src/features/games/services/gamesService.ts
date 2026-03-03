@@ -26,10 +26,16 @@ export const gamesService = {
 
     async getOne(id: string): Promise<Game | null> {
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
             const { data, error } = await supabase
                 .from('games')
                 .select('*')
                 .eq('id', id)
+                .eq('user_id', user.id)
                 .single();
 
             if (error) throw error;
@@ -66,6 +72,11 @@ export const gamesService = {
 
     async update(id: string, game: Partial<Omit<Game, 'id' | 'user_id' | 'created_at' | 'updated_at'>>): Promise<Game> {
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
             const { data, error } = await supabase
                 .from('games')
                 .update({
@@ -73,6 +84,7 @@ export const gamesService = {
                     updated_at: new Date().toISOString(),
                 })
                 .eq('id', id)
+                .eq('user_id', user.id)
                 .select()
                 .single();
 
@@ -86,10 +98,16 @@ export const gamesService = {
 
     async delete(id: string): Promise<boolean> {
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
             const { error } = await supabase
                 .from('games')
                 .delete()
-                .eq('id', id);
+                .eq('id', id)
+                .eq('user_id', user.id);
 
             if (error) throw error;
             return true;
